@@ -40,10 +40,21 @@ parser.add_option("-B", "--Banner", dest="Banner", default=Banner,
 parser.add_option("-n", "--noRatio", dest="doRatio", default=doRatio,
                   action="store_false", help="if True, ratios plots will be created")
 (options, args) = parser.parse_args()
-print "file for validation", options.valPath, "file for reference", options.refPath
-print "Validation release:", options.ValRel, "Reference release:", options.RefRel
-print "Validation sample:", options.ValSample, "Reference sample:", options.RefSample
-print "Options : batch mode ?", options.batch, "draw legend ?", options.drawLegend, "print banner ?", options.printBanner, "banner is ", options.Banner, "make ratio plots ?", options.doRatio
+
+
+print "File for validation :", options.valPath
+print "File for reference  :", options.refPath
+print "Validation release  :", options.ValRel 
+print "Reference release   :", options.RefRel
+print "Validation sample   :", options.ValSample
+print "Reference sample    :", options.RefSample
+print "Batch mode  ?",      options.batch
+print "Draw legend ?",      options.drawLegend
+print "Print banner ?",     options.printBanner
+print "Banner is ",         options.Banner
+print "Make ratio plots ?", options.doRatio
+
+
 #define the input root files                                                                                                                                                                              
 if options.valPath and options.refPath :
     fileVal = TFile(options.valPath,"READ")
@@ -53,10 +64,6 @@ if options.batch : ROOT.gROOT.SetBatch()
 # style
 _style = Style.Style()
 _style.SetStyle()
-#title
-if options.ValSample==options.RefSample : title=options.ValRel+"vs"+options.RefRel+" "+options.ValSample+" "
-elif options.ValRel==options.RefRel : title=options.ValRel+" "+options.ValSample+"_vs_"+options.RefSample+" "
-else : title=options.ValRel+"vs"+options.RefRel+" "+options.ValSample+"_vs_"+options.RefSample+" "
 #declaration
 c = {}
 perfAll_Val = {}
@@ -78,17 +85,17 @@ for b in EtaPtBin :
         for tag in h.listTagger :
             keyHisto = tag+"_"+h.name+"_"+b
             if h.doPerformance :
-                keyHisto = tag+"_performance_vs_"+h.tagFlavor
+                keyHisto = tag+"_performance_vs_"+h.tagFlavor+"_"+b
             #loop over the flavours
             h_Val = {}
             h_Ref = {}
             passH = False
+            print h.title, "for", tag
             for f in listFlavors :
                 path = pathInFile+tag+"_"+b+"/"+h.name+"_"+tag+"_"+b+f
                 if "_B_" in path : 
                     path=path.replace("_B_","_"+f+"_")
                     path=path.replace(b+f,b)
-                print path
                 #get histos
                 h_Val[f] = fileVal.Get(path)
                 h_Ref[f] = fileRef.Get(path)
@@ -115,18 +122,16 @@ for b in EtaPtBin :
             #compute ratios 
             if options.doRatio :
                 if h.doPerformance:
-                    ratiosList = createRatioFromGraph(valHistos[keyHisto],refHistos[keyHisto])
+                    ratiosList = createRatioFromGraph(keyHisto,valHistos[keyHisto],refHistos[keyHisto])
                 else :
                     ratiosList = createRatio(valHistos[keyHisto],refHistos[keyHisto])
                 ratios[keyHisto] = ratiosList
             else :
                 ratiosList = None
             #set name file
-            if options.ValSample == options.RefSample : saveName=options.ValRel+"vs"+options.RefRel+"_"+options.ValSample+"_Val_"+keyHisto+"_all"
-            elif options.ValRel==options.RefRel : saveName=options.ValRel+"_"+options.ValSample+"_vs_"+options.RefSample+"_Val_"+keyHisto+"_all"
-            else : saveName=options.ValRel+"vs"+options.RefRel+"_"+options.ValSample+"_vs_"+options.RefSample+"_Val_"+keyHisto+"_all"
+            saveName=keyHisto+"_all"
             #save canvas
-            c[keyHisto] = savePlots(title=title+tag,saveName=saveName,listFromats=listFromats,plot=h,Histos=valHistos[keyHisto]+refHistos[keyHisto],options=options,ratios=ratiosList,keyHisto=keyHisto,listLegend=listFlavors,legendName=h.legend)
+            c[keyHisto] = savePlots(title=tag,saveName=saveName,listFormats=listFormats,plot=h,Histos=valHistos[keyHisto]+refHistos[keyHisto],options=options,ratios=ratiosList,keyHisto=keyHisto,listLegend=listFlavors,legendName=h.legend)
         #for FlavEffVsBEff_B_discr
         if h.name=="FlavEffVsBEff_B_discr" :
             for f in ["C","DUSG"] :
@@ -136,10 +141,10 @@ for b in EtaPtBin :
                     if isVal : Histos[keyHisto]=histoProducer(plot=h,histos=perfAll_Val[f],keys=perfAll_keys,isVal=isVal)
                     else : Histos[keyHisto]=histoProducer(plot=h,histos=perfAll_Ref[f],keys=perfAll_keys,isVal=isVal)
                     #set name file    
-                    if isVal : saveName=options.ValRel+"_"+options.ValSample+"_performance_Bvs"+f+"_allTaggers"
-                    else : saveName=options.RefRel+"_"+options.RefSample+"_performance_Bvs"+f+"_allTaggers"
+                    if isVal : saveName="AllTaggers_performance_Bvs"+f+"_val"
+                    else : saveName="AllTaggers_performance_Bvs"+f+"_ref"
                     #set title
-                    if isVal : titleFlav = options.ValRel+"_"+options.ValSample+"_performance_Bvs"+f+"_allTaggers"
-                    else : titleFlav = options.RefRel+"_"+options.RefSample+"_performanceBvs"+f+"_allTaggers"
+                    if isVal : title = "To be validated / All taggers, B vs "+f
+                    else : title = "Reference / All taggers, B vs "+f
                     #save canvas
-                    c[keyHisto] = savePlots(title=titleFlav,saveName=saveName,listFromats=listFromats,plot=h,Histos=Histos[keyHisto],keyHisto=keyHisto,listLegend=h.listTagger,options=options,legendName=h.legend.replace("FLAV",f))
+                    c[keyHisto] = savePlots(title=title,saveName=saveName,listFormats=listFormats,plot=h,Histos=Histos[keyHisto],keyHisto=keyHisto,listLegend=h.listTagger,options=options,legendName=h.legend.replace("FLAV",f))

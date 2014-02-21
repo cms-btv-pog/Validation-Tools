@@ -31,6 +31,8 @@ from ROOT import TVectorD
 from ROOT import TGraphErrors
 from ROOT import Double
 
+gErrorIgnoreLevel=2
+
 import Style
 from listHistos import *
 
@@ -91,11 +93,11 @@ listFlavors = [
 #map for marker color for flav-col and tag-col
 mapColor = {
     "ALL"  : 4 ,
-    "B"    : 3 ,
-    "C"    : 1 ,
-    "G"    : 2 ,
-    "DUS"  : 2 ,
-    "DUSG" : 2 ,
+    "B"    : 633 ,
+    "C"    : 418 ,
+    "G"    : 860 ,
+    "DUS"  : 860 ,
+    "DUSG" : 860 ,
     "NI"   : 5 ,
     "CSV"       : 5 ,
     "CSVMVA"   : 6 ,
@@ -106,13 +108,14 @@ mapColor = {
     "SSVHE"     : 4,
     "SSVHP"     : 7,
     "SMT"       : 8 ,
+    "SET"       : 13 ,
     "SMTIP3d" : 11 ,
     "SMTPt"   : 12
     }
 #marker style map for Val/Ref
 mapMarker = {
-    "Val" : 22,
-    "Ref" :  8
+    "Val" : 20,
+    "Ref" : 24
     }
 mapLineWidth = {
     "Val" : 3,
@@ -123,8 +126,8 @@ mapLineStyle = {
     "Ref" : 1
     }
 #choose the formats to save the plots 
-listFromats = [
-    "gif",
+listFormats = [
+    "png",
     ]
 #unity function
 unity = TF1("unity","1",-1000,1000)
@@ -211,7 +214,8 @@ def histoProducer(plot,histos,keys,isVal=True):
             histos[k].SetLineWidth(mapLineWidth[sample])
             histos[k].SetLineStyle(mapLineStyle[sample])
         #compute errors
-        histos[k].Sumw2()
+        if histos[k].GetSumw2N() == 0 :
+            histos[k].Sumw2()
         #do the norm
         if plot.doNormalization :
             histos[k].Scale(1./histos[k].Integral())
@@ -250,7 +254,8 @@ def graphProducer(plot,histos,tagFlav="B",mistagFlav=["C","DUSG"],isVal=True):
         mistagFlav = plot.mistagFlavor
     for f in listFlavors :
         #compute errors, in case not already done
-        histos[f].Sumw2()
+        if histos[f].GetSumw2N() == 0 :
+                histos[f].Sumw2()
     #efficiency lists
     Eff = {}
     EffErr = {}
@@ -310,7 +315,7 @@ def graphProducer(plot,histos,tagFlav="B",mistagFlav=["C","DUSG"],isVal=True):
     return g_out   
 
 #method to draw the plot and save it
-def savePlots(title,saveName,listFromats,plot,Histos,keyHisto,listLegend,options,ratios=None,legendName="") :
+def savePlots(title,saveName,listFormats,plot,Histos,keyHisto,listLegend,options,ratios=None,legendName="") :
     #create canvas
     c = {}
     pads = {}
@@ -378,13 +383,16 @@ def savePlots(title,saveName,listFromats,plot,Histos,keyHisto,listLegend,options
             pads["ratio_"+str(r)].cd()
             if ratios[r] is None : continue
             pads["ratio_"+str(r)].SetGrid()
+            ratios[r].SetTitle("")
             ratios[r].GetYaxis().SetTitle(listLegend[r]+"-jets")
-            ratios[r].GetYaxis().SetTitleSize(0.15)
+            ratios[r].GetYaxis().SetTitleSize(0.2)
             ratios[r].GetYaxis().SetTitleOffset(0.2)
+            ratios[r].GetYaxis().CenterTitle()
             ratios[r].GetYaxis().SetNdivisions(3,3,2)
+            ratios[r].GetXaxis().SetLabelSize(0.0)
             ratios[r].Draw("")
             unity.Draw("same")
-    for format in listFromats :
+    for format in listFormats :
         save = saveName+"."+format
         c[keyHisto].Print(save)
     return [c,leg,tex,pads]    
@@ -404,15 +412,15 @@ def createRatio(hVal,hRef):
         ratio.append(r)
     return ratio
 #to create ratio plots from TGraphErrors
-def createRatioFromGraph(hVal,hRef):
+def createRatioFromGraph(key,hVal,hRef):
     ratio = []
     for g_i in range(0,len(hVal)):
         if hVal[g_i] is None :
             ratio.append(None)
             continue
         tmp = hVal[g_i].GetHistogram()
-        histVal = TH1F(hVal[g_i].GetName()+"_ratio",hVal[g_i].GetTitle()+"_ratio",tmp.GetNbinsX(),tmp.GetXaxis().GetXmin(),tmp.GetXaxis().GetXmax())
-        histRef = TH1F(hRef[g_i].GetName()+"_ratio",hRef[g_i].GetTitle()+"_ratio",histVal.GetNbinsX(),histVal.GetXaxis().GetXmin(),histVal.GetXaxis().GetXmax())
+        histVal = TH1F(key+"_ratio_val_"+str(g_i),"",tmp.GetNbinsX(),tmp.GetXaxis().GetXmin(),tmp.GetXaxis().GetXmax())
+        histRef = TH1F(key+"_ratio_ref_"+str(g_i),"",tmp.GetNbinsX(),tmp.GetXaxis().GetXmin(),tmp.GetXaxis().GetXmax())
         #loop over the N points
         for p in range(0,hVal[g_i].GetN()-1):
             #get point p
@@ -494,8 +502,10 @@ def createRatioFromGraph(hVal,hRef):
             histRef.SetBinContent(bin_p,bin_p_refContent)
             histRef.SetBinError(bin_p,(bin_p_refContent_errP-bin_p_refContent_errM)/2)
         #do the ratio
-        histVal.Sumw2()
-        histRef.Sumw2()
+        if histVal.GetSumw2N() == 0 :
+                histVal.Sumw2()
+        if histRef.GetSumw2N() == 0 :
+                histRef.Sumw2()
         histVal.Divide(histRef)
         #ratio style
         histVal.GetXaxis().SetRangeUser(0.,1.)
