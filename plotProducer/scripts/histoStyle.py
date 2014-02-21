@@ -107,7 +107,8 @@ mapColor = {
     "SSVHP"     : 7,
     "SMT"       : 8 ,
     "SMTIP3d" : 11 ,
-    "SMTPt"   : 12
+    "SMTPt"   : 12 ,
+    "SET"       : 13 ,
     }
 #marker style map for Val/Ref
 mapMarker = {

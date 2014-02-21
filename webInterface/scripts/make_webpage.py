@@ -31,11 +31,11 @@ mypath = os.getcwd()
 pkgpath = ''
 try:
 	
-	pkgpath = os.environ['CMSSW_BASE']+"/src/ValidationTools/Scripts/templates/"
+	pkgpath = os.environ['CMSSW_BASE']+"/src/Validation-Tools/webInterface/templates/"
 
 except LookupError:
 	
-	pkgpath = "/uscms/home/yumiceva/work/ValidationTools/Scripts/templates/"
+	pkgpath = "/uscms/home/yumiceva/work/Validation-Tools/webInterface/templates/"
 
 os.chdir(pkgpath)
 
