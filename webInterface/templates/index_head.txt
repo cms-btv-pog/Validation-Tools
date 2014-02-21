@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html>
+<head><title>CMSSW Release Validation</title>
+<script>
+function displaymessage(thetext){
+	
+    oNewDoc = document.open("text/html");
+    var sMarkup = "<HTML><HEAD><TITLE>New Document</TITLE><BODY>"+thetext+"</BODY></HTML>";
+    oNewDoc.write(sMarkup);
+    oNewDoc.close();
+    
+}
+</script>
+                <!--<meta http-equiv="refresh" content="300">-->
+                <link rel="stylesheet" type="text/css" media="print" href="css/print.css">
+                <style type="text/css" media="screen">
+                        @import url("css/layout.css");
+                        @import url("css/content.css");
+                        @import url("css/docbook.css");
+                </style>
+                <meta name="MSSmartTagsPreventParsing" content="TRUE">
+                </head>
+
+
+        <body>
+                <!-- header BEGIN -->
+                <div id="fedora-header">
+                        <div id="fedora-header-logo">
+                                <strong><big>CMSSW Release Validation</big></strong>
+                                <br>
+                                <div align="right"><a href="https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideBtagValidation">Support</a></div>
+                        </div>
+                        <div id="fedora-header-items">
+                                <span class="fedora-header-icon">
+				      [<a href="https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideVertexReco#Analysis_and_Validation" alt="">About this page</a>]<br>
+                                        <!--<a href="yumiceva_fluka.pdf" id="link-internal">
+                                        <img src="../../img/pdf.png" alt="">Download PDF version of this web page</a> -->
+                                        <!--This page is automatically updated every 30'<br>-->
+					<strong><tt class="link-internal"><script src="css/datemod.js"
+type="text/javascript"></script></tt></strong></span>
+                        </div>
+                </div>
+
+                <div id="fedora-nav"></div>
+                <!-- header END -->
+
+                
+

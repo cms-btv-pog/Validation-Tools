@@ -1,0 +1,16 @@
+
+        </div><div></div>
+</div>
+                </div></div></div>
+                        <div class="fedora-corner-br">&nbsp;</div>
+                        <div class="fedora-corner-bl">&nbsp;</div>
+                </div>
+                <!-- content END -->
+
+                <!-- footer BEGIN -->
+                <div id="fedora-footer">
+                        Francisco Yumiceva, Aram Avetisyan
+                        <br>
+                </div>
+                <!-- footer END -->
+        </body></html>

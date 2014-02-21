@@ -1,0 +1,5 @@
+FILE QUARANTINED
+
+Microsoft Forefront Security has identified that the attachment called "ValidationTools.tar.gz->ValidationTools.tar->ValidationTools/Scripts/templates/css/datemod.js" is potentially dangerous and has been replaced by this message. (reference CERNMX30:ValidationTools.tar.gz->ValidationTools.tar->ValidationTools/Scripts/templates/css/datemod.js)
+For more information see: [http://cern.ch/mmmservices/Help/?kBID=171010]
+The CERN Antivirus Service
