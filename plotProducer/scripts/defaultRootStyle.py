@@ -13,7 +13,7 @@
 
 import ROOT
 
-class Style:
+class defaultRootStyle:
 
     def SetStyle(self):
 

@@ -7,8 +7,6 @@
 
 #######
 
-#import all what is needed
-from histoStyle import *
 #parser options
 from optparse import OptionParser
 usage="""%prog [options]"""
@@ -17,30 +15,29 @@ epilog="""Example:
 plotFactory.py -f BTagRelVal_TTbar_Startup_600.root -F BTagRelVal_TTbar_Startup_600gspre3.root -r 600 -R 600gspre3 -s TTbar_Startup -S TTbar_Startup 
 """
 parser = OptionParser(usage=usage,add_help_option=True,description=description,epilog=epilog)
-parser.add_option("-f", "--valInputFile", dest="valPath", default=fileNameVal,
+parser.add_option("-f", "--valInputFile", dest="valPath", default="",
                   help="Read input file for sample to validated", metavar="VALFILE")
-parser.add_option("-F", "--refInputFile", dest="refPath", default=fileNameRef,
+parser.add_option("-F", "--refInputFile", dest="refPath", default="",
                   help="Read input file for reference sample", metavar="RAFFILE")
-parser.add_option("-r", "--valReleaseName", dest="ValRel", default=ValRel,
+parser.add_option("-r", "--valReleaseName", dest="ValRel", default="ToBeVal.",
                   help="Name to refer to the release/conditions to validate, ex: 600, GTV18 ...", metavar="VALREL")
-parser.add_option("-R", "--refReleaseName", dest="RefRel", default=RefRel,
+parser.add_option("-R", "--refReleaseName", dest="RefRel", default="Reference",
                   help="Name to refer to the reference release/conditions, ex: 600pre11, GTV16 ...", metavar="REFREL")
-parser.add_option("-s", "--valSampleName", dest="ValSample", default=ValSample,
+parser.add_option("-s", "--valSampleName", dest="ValSample", default="ValSample",
                   help="Name to refer to the sample name to validate, ex: TTbar_FullSim, 2012C ...", metavar="VALSAMPLE")
-parser.add_option("-S", "--refSampleName", dest="RefSample", default=RefSample,
+parser.add_option("-S", "--refSampleName", dest="RefSample", default="RefSample",
                   help="Name to refer to the reference sample name, ex: TTbar_FullSim, 2012C ...", metavar="REFSAMPLE")
-parser.add_option("-b", "--batch", dest="batch", default=batch,
+parser.add_option("-b", "--batch", dest="batch", default=False,
                   action="store_true", help="if False, the script will run in batch mode")
-parser.add_option("-l", "--drawLegend", dest="drawLegend", default=drawLegend,
+parser.add_option("-l", "--drawLegend", dest="drawLegend", default=True,
                   action="store_true", help="if True the legend will be drawn on top of the plots")
-parser.add_option("-p", "--printBanner", dest="printBanner", default=printBanner,
+parser.add_option("-p", "--printBanner", dest="printBanner", default=False,
                   action="store_true", help="if True, a banner will be print on top of the plots")
-parser.add_option("-B", "--Banner", dest="Banner", default=Banner,
+parser.add_option("-B", "--Banner", dest="Banner", default="CMS Preliminary",
                   help="String to write as banner on top of the plots, option -B should be used")
-parser.add_option("-n", "--noRatio", dest="doRatio", default=doRatio,
+parser.add_option("-n", "--noRatio", dest="doRatio", default=True,
                   action="store_false", help="if True, ratios plots will be created")
 (options, args) = parser.parse_args()
-
 
 print "File for validation :", options.valPath
 print "File for reference  :", options.refPath
@@ -54,6 +51,8 @@ print "Print banner ?",     options.printBanner
 print "Banner is ",         options.Banner
 print "Make ratio plots ?", options.doRatio
 
+#import all what is needed
+from plotProducer import *
 
 #define the input root files                                                                                                                                                                              
 if options.valPath and options.refPath :
@@ -62,7 +61,7 @@ if options.valPath and options.refPath :
 #batch mode ?
 if options.batch : ROOT.gROOT.SetBatch()
 # style
-_style = Style.Style()
+_style = defaultRootStyle.defaultRootStyle()
 _style.SetStyle()
 #declaration
 c = {}
@@ -90,7 +89,7 @@ for b in EtaPtBin :
             h_Val = {}
             h_Ref = {}
             passH = False
-            print h.title, "for", tag
+            print tag, "\t:: ", h.title
             for f in listFlavors :
                 path = pathInFile+tag+"_"+b+"/"+h.name+"_"+tag+"_"+b+f
                 if "_B_" in path : 
