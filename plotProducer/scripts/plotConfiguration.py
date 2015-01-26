@@ -16,12 +16,13 @@ EtaPtBin =[
     #"ETA_1v4-2v4",
     #"PT_50-80",
     #"PT_80-120",
+    #"ETA_0-1v4_PT_80-120"
 ]
 
 #list of taggers to look at
 listTag = [
     "CSV",
-    "CSVMVA",
+    "CSVv2",
     "JP",
     "JBP",
     "TCHE",
@@ -40,7 +41,9 @@ listFlavors = [
         #"DUS",
         "DUSG",
         #"NI",
+        #"PU",
 ]
+
 #map for marker color for flav-col and tag-col
 mapColor = {
     "ALL"  : 4 ,
@@ -49,9 +52,10 @@ mapColor = {
     "G"    : 860 ,
     "DUS"  : 860 ,
     "DUSG" : 860 ,
+    "PU"   : 797,
     "NI"   : 5 ,
     "CSV"       : 5 ,
-    "CSVMVA"   : 6 ,
+    "CSVv2"     : 6 ,
     "JP"        : 3 ,
     "JBP"       : 9 ,
     "TCHE"      : 1,
@@ -78,6 +82,6 @@ mapLineStyle = {
 }
 #choose the formats to save the plots 
 listFormats = [
-    "png",
+    "png"
 ]
 

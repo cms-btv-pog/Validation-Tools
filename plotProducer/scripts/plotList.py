@@ -6,6 +6,9 @@
 
 #######
 
+mistagFlavors=["C","DUSG"]
+#mistagFlavors=["C","DUSG","PU"]
+
 class plotInfo :
     def __init__ (self, name,
                   title, #mandatory
@@ -17,7 +20,7 @@ class plotInfo :
                   binning=None, Rebin=None,
                   doNormalization=False,
                   listTagger=None,
-                  doPerformance=False, tagFlavor="B", mistagFlavor=["C","DUSG"]):
+                  doPerformance=False, tagFlavor="B", mistagFlavor=mistagFlavors):
         self.name = name                        # name of the histos without postfix as PT/ETA bin or flavor
         self.title = title                      # title of the histograms : better if specific for the histogram
         self.legend = legend                    # legend name, if contain 'KEY', it will be replace by the list of keys you provide (as flavor, tagger ...)
@@ -54,7 +57,7 @@ jetPt = plotInfo(name="jetPt",
                  Xlabel="Pt (GeV/c)", 
                  Ylabel="Arbitrary units",
                  logY=False, grid=False,
-                 binning=[300,10.,310.], Rebin=20, 
+                 binning=[300,0,300], Rebin=10, 
                  doNormalization=True,
                  listTagger=["CSV"]
                  )
@@ -78,7 +81,7 @@ discr = plotInfo(name="discr",
                  Xlabel="Discriminant", 
                  Ylabel="Normalized entries",
                  logY=False, grid=False,
-                 binning=None, Rebin=None,
+                 binning=None, Rebin=2,
                  doNormalization=True
                  )
 
@@ -109,9 +112,7 @@ performance = plotInfo(name="effVsDiscrCut_discr",
                        Xlabel="TAG-tag efficiency", 
                        Ylabel="Non TAG-tag efficiency",
                        logY=True, grid=True, 
-                       doPerformance=True, 
-                       tagFlavor="B", 
-                       mistagFlavor=["C","DUSG"]
+                       doPerformance=True 
                        )
 
 #MC only, to do C vs B and C vs light
@@ -136,7 +137,7 @@ IP = plotInfo(name="ip_3D",
               Xlabel="IP [cm]", 
               Ylabel="Arbitrary units",
               logY=False, grid=False,
-              binning=None,Rebin=None, 
+              binning=None,Rebin=2, 
               doNormalization=True,
               listTagger=["IPTag"]
               )
@@ -148,7 +149,7 @@ IPe = plotInfo(name="ipe_3D",
                Xlabel="IP error [cm]", 
                Ylabel="Arbitrary units",
                logY=False, grid=False, 
-               binning=None, Rebin=None, 
+               binning=None, Rebin=2, 
                doNormalization=True,
                listTagger=["IPTag"]
                )
@@ -160,7 +161,7 @@ IPs = plotInfo(name="ips_3D",
                Xlabel="IP significance", 
                Ylabel="Arbitrary units", 
                logY=False, grid=False, 
-               binning=None, Rebin=None, 
+               binning=None, Rebin=2, 
                doNormalization=True,
                listTagger=["IPTag"]
                )
@@ -332,7 +333,7 @@ vertexEnergyRatio = plotInfo(name="vertexEnergyRatio",
                              Xlabel="Energy Ratio between SV and the jet", 
                              Ylabel="Arbitrary units",
                              logY=False, grid=False,
-                             binning=None, Rebin=None,
+                             binning=None, Rebin=2,
                              doNormalization=True,
                              listTagger=["CSVTag"]
                              )
@@ -358,7 +359,7 @@ trackSip3dVal = plotInfo(name="trackSip3dVal",
                          Xlabel="Track IP 3D [cm]", 
                          Ylabel="Arbitrary units",
                          logY=False, grid=False,
-                         binning=None, Rebin=None, 
+                         binning=None, Rebin=2, 
                          doNormalization=True,
                          listTagger=["CSVTag"]
                          )
@@ -370,7 +371,7 @@ trackSip3dSig = plotInfo(name="trackSip3dSig",
                          Xlabel="Track IPS 3D",
                          Ylabel="Arbitrary units",
                          logY=False, grid=False,
-                         binning=None, Rebin=None,
+                         binning=None, Rebin=2,
                          doNormalization=True,
                          listTagger=["CSVTag"]
                          )
@@ -381,7 +382,7 @@ trackSip3dSigAboveCharm = plotInfo(name="trackSip3dSigAboveCharm",
                                    Xlabel="First track IPS 3D lifting SV mass above charm",
                                    Ylabel="Arbitrary units",
                                    logY=False, grid=False,
-                                   binning=None, Rebin=None,
+                                   binning=None, Rebin=2,
                                    doNormalization=True,
                                    listTagger=["CSVTag"]
                                    )

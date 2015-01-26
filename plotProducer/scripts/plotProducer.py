@@ -80,7 +80,10 @@ def histoProducer(plot,histos,keys,isVal=True):
             histos[k].Sumw2()
         #do the norm
         if plot.doNormalization :
-            histos[k].Scale(1./histos[k].Integral())
+            if histos[k].Integral() == 0 : 
+                print "Warning : ", histos[k].GetName(), " ", sample, " integral = 0"
+            else :
+                histos[k].Scale(1./histos[k].Integral())
         elif weight!=1 :
             histos[k].Scale(weight)
         #get Y min

@@ -33,7 +33,7 @@ parser.add_option("-l", "--drawLegend", dest="drawLegend", default=True,
                   action="store_true", help="if True the legend will be drawn on top of the plots")
 parser.add_option("-p", "--printBanner", dest="printBanner", default=False,
                   action="store_true", help="if True, a banner will be print on top of the plots")
-parser.add_option("-B", "--Banner", dest="Banner", default="CMS Preliminary",
+parser.add_option("-B", "--Banner", dest="Banner", default="CMS Validation",
                   help="String to write as banner on top of the plots, option -B should be used")
 parser.add_option("-n", "--noRatio", dest="doRatio", default=True,
                   action="store_false", help="if True, ratios plots will be created")
