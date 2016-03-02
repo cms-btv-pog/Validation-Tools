@@ -9,7 +9,7 @@ weight = 1
 pathInFile = "/DQMData/Run 1/Btag/Run summary/"
 drawOption = ""         # "" or "HIST"
 
-#ETA/PT bins, GLOBAL ?
+# ETA/PT bins, GLOBAL ?
 EtaPtBin =[
     "GLOBAL",
     #"ETA_0-1v4",
@@ -18,10 +18,13 @@ EtaPtBin =[
     #"PT_80-120",
 ]
 
-#list of taggers to look at
+# list of taggers to look at
 listTag = [
     "CSV",
-    "CSVMVA",
+	"CSVv2",
+	"combMVA",
+	"combMVAV2",
+    #"CSVMVA",
     "JP",
     "JBP",
     "TCHE",
@@ -31,7 +34,8 @@ listTag = [
     "SMT",
     "SET",
 ]
-#list of flavors to look at
+
+# list of flavors to look at
 listFlavors = [
         #"ALL",
         "B",
@@ -39,9 +43,11 @@ listFlavors = [
         #"G",
         #"DUS",
         "DUSG",
+		#"PU",
         #"NI",
 ]
-#map for marker color for flav-col and tag-col
+
+# map for marker color for flav-col and tag-col
 mapColor = {
     "ALL"  : 4 ,
     "B"    : 633 ,
@@ -50,8 +56,12 @@ mapColor = {
     "DUS"  : 860 ,
     "DUSG" : 860 ,
     "NI"   : 5 ,
+	"PU"   : 6 ,
+    
     "CSV"       : 5 ,
-    "CSVMVA"   : 6 ,
+	"CSVv2"		: 15 ,
+	"combMVA"   : 6 ,
+	"combMVAV2"   : 16 ,
     "JP"        : 3 ,
     "JBP"       : 9 ,
     "TCHE"      : 1,
@@ -60,23 +70,25 @@ mapColor = {
     "SSVHP"     : 7,
     "SMT"       : 8 ,
     "SET"       : 13 ,
-    "SMTIP3d" : 11 ,
-    "SMTPt"   : 12
 }
-#marker style map for Val/Ref
+
+# marker style map for Val/Ref
 mapMarker = {
     "Val" : 20,
     "Ref" : 24
 }
+
 mapLineWidth = {
     "Val" : 3,
     "Ref" : 2
 }
+
 mapLineStyle = {
     "Val" : 2,
     "Ref" : 1
 }
-#choose the formats to save the plots 
+
+# choose the formats to save the plots 
 listFormats = [
     "png",
 ]

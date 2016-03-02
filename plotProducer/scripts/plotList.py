@@ -30,15 +30,15 @@ class plotInfo :
         self.Rebin = Rebin                      # if you want to rebin the histos
         self.doNormalization = doNormalization  #if you want to normalize to 1 all the histos 
         self.doPerformance = doPerformance      #if you want to draw the performance as TGraph
-        if self.doPerformance : 
+        if self.doPerformance: 
             #replace TAG by the tag flavor choosen (B, C, UDSG ...)
-            self.title = name.replace("TAG",tagFlavor)
-            self.Xlabel = Xlabel.replace("TAG",tagFlavor)
-            self.Ylabel = Ylabel.replace("TAG",tagFlavor)
-            self.legend = legend.replace("TAG",tagFlavor)
+            self.title = name.replace("TAG", tagFlavor)
+            self.Xlabel = Xlabel.replace("TAG", tagFlavor)
+            self.Ylabel = Ylabel.replace("TAG", tagFlavor)
+            self.legend = legend.replace("TAG", tagFlavor)
             self.tagFlavor = tagFlavor
             self.mistagFlavor = mistagFlavor
-        if listTagger is None :
+        if listTagger is None:
             self.listTagger=None                # you will take the list of tagger defined centrally
         else :
             self.listTagger=listTagger          # you take the list passed as argument
@@ -91,17 +91,17 @@ effVsDiscrCut_discr = plotInfo(name="effVsDiscrCut_discr",
                                logY=True, grid=True
                                )
 
-# MC only
+# MC only: all taggers' performance summary
 FlavEffVsBEff_discr = plotInfo(name="FlavEffVsBEff_B_discr", 
                                title="b-tag efficiency versus non b-tag efficiency", 
                                legend="KEY FLAV-jets versus b-jets", 
                                legendPosition="top-left",
                                Xlabel="b-tag efficiency", 
                                Ylabel="Non b-tag efficiency",
-                               logY=True, grid=True
+                               logY=True, grid=True,
                                )
 
-#MC only
+# MC only
 performance = plotInfo(name="effVsDiscrCut_discr", 
                        title="TAG-tag efficiency versus non TAG-tag efficiency", 
                        legend="isVAL KEY-jets versus TAG-jets", 
@@ -114,7 +114,7 @@ performance = plotInfo(name="effVsDiscrCut_discr",
                        mistagFlavor=["C","DUSG"]
                        )
 
-#MC only, to do C vs B and C vs light
+# MC only, to do C vs B and C vs light all taggers' summary (currently not used)
 performanceC = plotInfo(name="effVsDiscrCut_discr",
                         title="TAG-tag efficiency versus non TAG-tag efficiency", 
                         legend="isVAL KEY-jets versus TAG-jets", 
@@ -127,7 +127,7 @@ performanceC = plotInfo(name="effVsDiscrCut_discr",
                         mistagFlavor=["B","DUSG"]
                        )
 
-#by tracks
+# track infos
 
 IP = plotInfo(name="ip_3D", 
               title="Impact parameter", 
@@ -164,6 +164,77 @@ IPs = plotInfo(name="ips_3D",
                doNormalization=True,
                listTagger=["IPTag"]
                )
+
+IP2 = plotInfo(name="ip2_3D", 
+              title="Impact parameter", 
+              legend="isVAL KEY-jets", 
+              legendPosition="top-left",
+              Xlabel="track 2 IP [cm]", 
+              Ylabel="Arbitrary units",
+              logY=False, grid=False,
+              binning=None,Rebin=None, 
+              doNormalization=True,#
+              listTagger=["IPTag"]
+              )
+
+IPe2 = plotInfo(name="ipe2_3D", 
+               title="Impact parameter error",
+               legend="isVAL KEY-jets", 
+               legendPosition="top-right",
+               Xlabel="track 2 IP error [cm]", 
+               Ylabel="Arbitrary units",
+               logY=False, grid=False, 
+               binning=None, Rebin=None, 
+               doNormalization=True,
+               listTagger=["IPTag"]
+               )
+
+IPs2 = plotInfo(name="ips2_3D", 
+               title="Impact parameter significance", 
+               legend="isVAL KEY-jets", 
+               legendPosition="top-left",
+               Xlabel="track 2 IP significance", 
+               Ylabel="Arbitrary units", 
+               logY=False, grid=False, 
+               binning=None, Rebin=None, 
+               doNormalization=True,
+               listTagger=["IPTag"])
+
+IP3 = plotInfo(name="ip3_3D", 
+              title="Impact parameter", 
+              legend="isVAL KEY-jets", 
+              legendPosition="top-left",
+              Xlabel="track 3 IP [cm]", 
+              Ylabel="Arbitrary units",
+              logY=False, grid=False,
+              binning=None,Rebin=None, 
+              doNormalization=True,
+              listTagger=["IPTag"]
+              )
+
+IPe3 = plotInfo(name="ipe3_3D", 
+               title="Impact parameter error",
+               legend="isVAL KEY-jets", 
+               legendPosition="top-right",
+               Xlabel="track 3 IP error [cm]", 
+               Ylabel="Arbitrary units",
+               logY=False, grid=False, 
+               binning=None, Rebin=None, 
+               doNormalization=True,
+               listTagger=["IPTag"]
+               )
+
+IPs3 = plotInfo(name="ips3_3D", 
+               title="Impact parameter significance", 
+               legend="isVAL KEY-jets", 
+               legendPosition="top-left",
+               Xlabel="track 3 IP significance", 
+               Ylabel="Arbitrary units", 
+               logY=False, grid=False, 
+               binning=None, Rebin=None, 
+               doNormalization=True,
+               listTagger=["IPTag"]
+			   )
 
 tracksN = plotInfo(name="selTrksNbr_3D", 
                    title="Number of selected tracks", 
@@ -249,7 +320,7 @@ trackPt = plotInfo(name="tkPt_3D",
                    listTagger=["IPTag"]
                    )
 
-#by SV and for CSV information
+# by SV, for CSV information
 
 flightDist3Dval = plotInfo(name="flightDistance3dVal", 
                            title="3D flight distance value", 
@@ -275,7 +346,7 @@ flightDist3Dsig = plotInfo(name="flightDistance3dSig",
                            listTagger=["CSVTag"]
                            )
 
-#Reco and pseudo vertex information
+# Reco and pseudo vertex information
 
 vertexN = plotInfo(name="jetNSecondaryVertices", 
                    title="Number of SV / jet", 
@@ -337,7 +408,7 @@ vertexEnergyRatio = plotInfo(name="vertexEnergyRatio",
                              listTagger=["CSVTag"]
                              )
 
-#Reco, pseudo and no vertex information
+# Reco, pseudo and no vertex information
 
 vertexCategory = plotInfo(name="vertexCategory", 
                           title="Reco, Pseudo, No vertex", 
@@ -515,13 +586,13 @@ trackPParRatio = plotInfo(name="trackPParRatio",
                           listTagger=["CSVTag"]
                           )
 
-#list of histos to plots
+# list of histos to plots
 listHistos = [
-    # Kinematic
+    ## Kinematic
     jetPt,
     jetEta,
 
-    # Algorithm performances
+    ## Algorithm performances
     discr,
     effVsDiscrCut_discr,
     FlavEffVsBEff_discr,
@@ -532,6 +603,12 @@ listHistos = [
     IP,
     IPe,
     IPs,
+    IP2,
+    IPe2,
+    IPs2,
+    IP3,
+    IPe3,
+    IPs3,
     decayLength,
     flightDist3Dval,
     flightDist3Dsig,
