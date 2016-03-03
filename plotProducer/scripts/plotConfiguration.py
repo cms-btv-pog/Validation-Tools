@@ -18,22 +18,31 @@ EtaPtBin =[
     #"PT_80-120",
 ]
 
-# list of taggers to look at
-listTag = [
-    "CSV",
+# list of taggers to look at, divided in B- or C-taggers
+# (needed to distinguish performance plots)
+listTagB = [
+    #"CSV",
 	"CSVv2",
-	"combMVA",
-	"combMVAV2",
+	#"combMVA",
+	"combMVAv2",
     #"CSVMVA",
     "JP",
     "JBP",
     "TCHE",
-    "TCHP",
+    #"TCHP",
     "SSVHE",
-    "SSVHP",
+    "SISVHE",
+    #"SSVHP",
     "SMT",
     "SET",
 ]
+
+listTagC = [
+    "Ctagger_CvsB",
+    "Ctagger_CvsL"
+]
+
+listTag = listTagB + listTagC
 
 # list of flavors to look at
 listFlavors = [
@@ -58,16 +67,17 @@ mapColor = {
     "NI"   : 5 ,
 	"PU"   : 6 ,
     
-    "CSV"       : 5 ,
+    #"CSV"       : 5 ,
 	"CSVv2"		: 15 ,
-	"combMVA"   : 6 ,
-	"combMVAV2"   : 16 ,
+	#"combMVA"   : 6 ,
+	"combMVAv2"   : 16 ,
     "JP"        : 3 ,
     "JBP"       : 9 ,
     "TCHE"      : 1,
-    "TCHP"      : 2,
+    #"TCHP"      : 2,
     "SSVHE"     : 4,
-    "SSVHP"     : 7,
+    "SISVHE"     : 7,
+    #"SSVHP"     : 7,
     "SMT"       : 8 ,
     "SET"       : 13 ,
 }

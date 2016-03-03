@@ -6,6 +6,9 @@
 
 #######
 
+# Needed to differentiate performance plots were target = B or C
+from plotConfiguration import listTagB, listTagC
+
 class plotInfo :
     def __init__ (self, name,
                   title, #mandatory
@@ -56,7 +59,7 @@ jetPt = plotInfo(name="jetPt",
                  logY=False, grid=False,
                  binning=[300,10.,310.], Rebin=20, 
                  doNormalization=True,
-                 listTagger=["CSV"]
+                 listTagger=["CSVv2"]
                  )
 
 jetEta = plotInfo(name="jetEta", 
@@ -68,7 +71,7 @@ jetEta = plotInfo(name="jetEta",
                   logY=False, grid=False,
                   binning=[11,90], Rebin=4, 
                   doNormalization=True,
-                  listTagger=["CSV"]
+                  listTagger=["CSVv2"]
                   )
 
 discr = plotInfo(name="discr", 
@@ -99,6 +102,7 @@ FlavEffVsBEff_discr = plotInfo(name="FlavEffVsBEff_B_discr",
                                Xlabel="b-tag efficiency", 
                                Ylabel="Non b-tag efficiency",
                                logY=True, grid=True,
+                               listTagger=listTagB
                                )
 
 # MC only
@@ -111,11 +115,12 @@ performance = plotInfo(name="effVsDiscrCut_discr",
                        logY=True, grid=True, 
                        doPerformance=True, 
                        tagFlavor="B", 
-                       mistagFlavor=["C","DUSG"]
+                       mistagFlavor=["C","DUSG"],
+                       listTagger=listTagB
                        )
 
-# MC only, to do C vs B and C vs light all taggers' summary (currently not used)
-performanceC = plotInfo(name="effVsDiscrCut_discr",
+# MC only, to do C vs B
+performanceCvsB = plotInfo(name="effVsDiscrCut_discr",
                         title="TAG-tag efficiency versus non TAG-tag efficiency", 
                         legend="isVAL KEY-jets versus TAG-jets", 
                         legendPosition="top-left",
@@ -124,7 +129,22 @@ performanceC = plotInfo(name="effVsDiscrCut_discr",
                         logY=True, grid=True, 
                         doPerformance=True, 
                         tagFlavor="C", 
-                        mistagFlavor=["B","DUSG"]
+                        mistagFlavor=["B"],
+                        listTagger=["Ctagger_CvsB"]
+                       )
+
+# MC only, to do C vs light
+performanceCvsL = plotInfo(name="effVsDiscrCut_discr",
+                        title="TAG-tag efficiency versus non TAG-tag efficiency", 
+                        legend="isVAL KEY-jets versus TAG-jets", 
+                        legendPosition="top-left",
+                        Xlabel="TAG-tag efficiency", 
+                        Ylabel="non TAG-tag efficiency",
+                        logY=True, grid=True, 
+                        doPerformance=True, 
+                        tagFlavor="C", 
+                        mistagFlavor=["DUSG"],
+                        listTagger=["Ctagger_CvsL"]
                        )
 
 # track infos
@@ -597,7 +617,8 @@ listHistos = [
     effVsDiscrCut_discr,
     FlavEffVsBEff_discr,
     performance,
-    #performanceC,
+    performanceCvsB,
+    performanceCvsL,
 
     # Low-level variables
     IP,
