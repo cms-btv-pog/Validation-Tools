@@ -80,6 +80,12 @@ mapColor = {
     #"SSVHP"     : 7,
     "SMT"       : 8 ,
     "SET"       : 13 ,
+
+    # c-tagger correlation working points
+    "500000"   : 633,
+    "400000"   : 418,
+    "300000"   : 860,
+    "200000"   : 6,
 }
 
 # marker style map for Val/Ref

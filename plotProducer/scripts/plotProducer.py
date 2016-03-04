@@ -313,11 +313,14 @@ def savePlots(title, saveName, listFormats, plot, histos, keyHisto, listLegend, 
 
     # define legend entries for different flavours from dummy histos
     flavorColor = {}
-    for flavor in plotConfiguration.listFlavors:
-        flavorColor[flavor] = TH1F("dummy_" + flavor, "", 1, 0, 1);
-        flavorColor[flavor].SetMarkerStyle(21); 
-        flavorColor[flavor].SetMarkerColor(plotConfiguration.mapColor[flavor]);
-        leg.AddEntry(flavorColor[flavor],flavor+" jets","P")
+    for flavor in listLegend:
+        flavorColor[flavor] = TH1F("dummy_" + flavor, "", 1, 0, 1)
+        flavorColor[flavor].SetMarkerStyle(21)
+        flavorColor[flavor].SetMarkerColor(plotConfiguration.mapColor[flavor])
+        legText = flavor + " jets"
+        # special treatment for c-tagger correlation
+        legText = legText.replace("0000 jets", "%% c-jet eff.")
+        leg.AddEntry(flavorColor[flavor], legText, "P")
 
     # Draw legend
     if plot.legend and options.drawLegend: leg.Draw("same")

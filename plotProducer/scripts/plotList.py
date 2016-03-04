@@ -7,7 +7,7 @@
 #######
 
 # Needed to differentiate performance plots were target = B or C
-from plotConfiguration import listTagB, listTagC
+from plotConfiguration import listTagB, listTagC, listFlavors
 
 class plotInfo :
     def __init__ (self, name,
@@ -19,7 +19,7 @@ class plotInfo :
                   logY=False, grid=False,
                   binning=None, Rebin=None,
                   doNormalization=False,
-                  listTagger=None,
+                  listTagger=None, listFlavors=None,
                   doPerformance=False, tagFlavor="B", mistagFlavor=["C","DUSG"]):
         self.name = name                        # name of the histos without postfix as PT/ETA bin or flavor
         self.title = title                      # title of the histograms : better if specific for the histogram
@@ -42,9 +42,14 @@ class plotInfo :
             self.tagFlavor = tagFlavor
             self.mistagFlavor = mistagFlavor
         if listTagger is None:
-            self.listTagger=None                # you will take the list of tagger defined centrally
-        else :
-            self.listTagger=listTagger          # you take the list passed as argument
+            self.listTagger = None                # you will take the list of tagger defined centrally
+        else:
+            self.listTagger = listTagger          # you take the list passed as argument
+        if listFlavors is None:
+            self.listFlavors = None                 # same thing for flavors
+        else:
+            self.listFlavors = listFlavors
+
 
 #define here the histograms you interested by
 
@@ -83,6 +88,17 @@ discr = plotInfo(name="discr",
                  logY=False, grid=False,
                  binning=None, Rebin=None,
                  doNormalization=True
+                 )
+
+correlationC = plotInfo(name="pfCombinedCvsBJetTags_vs_pfCombinedCvsLJetTags", 
+                 title="C-tagger correlation", 
+                 legend="BvsL at fixed C eff.", 
+                 legendPosition="top-right",
+                 Xlabel="Light mistag", 
+                 Ylabel="B mistag",
+                 listTagger=["TagCorrelation"],
+                 # For c-tagger correlation, "flavor" represents the different c efficiency working points
+                 listFlavors=["500000","400000","300000","200000"]
                  )
 
 effVsDiscrCut_discr = plotInfo(name="effVsDiscrCut_discr", 
@@ -608,19 +624,20 @@ trackPParRatio = plotInfo(name="trackPParRatio",
 
 # list of histos to plots
 listHistos = [
-    ## Kinematic
+    ### Kinematic
     jetPt,
     jetEta,
 
-    ## Algorithm performances
+    ### Algorithm performances
     discr,
     effVsDiscrCut_discr,
     FlavEffVsBEff_discr,
     performance,
     performanceCvsB,
     performanceCvsL,
+    correlationC,
 
-    # Low-level variables
+    ## Low-level variables
     IP,
     IPe,
     IPs,

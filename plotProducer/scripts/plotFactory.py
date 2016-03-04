@@ -83,13 +83,16 @@ for bin in plotConfiguration.EtaPtBin:
     
     # loop over the histos
     for histo in plotList.listHistos:
-       
-        for flav in plotConfiguration.listFlavors:
-            perfAll_Val[flav] = {}
-            perfAll_Ref[flav] = {}
+
+        # loop over the whole list of flavors if none was specified
+        if histo.listFlavors is None: histo.listFlavors = plotConfiguration.listFlavors
         
         # loop over the whole list of taggers if none was specified
         if histo.listTagger is None: histo.listTagger = plotConfiguration.listTag
+        
+        for flav in histo.listFlavors:
+            perfAll_Val[flav] = {}
+            perfAll_Ref[flav] = {}
         
         for tagger in histo.listTagger:
             keyHisto = tagger + "_" + histo.name + "_" + bin
@@ -102,10 +105,13 @@ for bin in plotConfiguration.EtaPtBin:
             passH = False
             print tagger, "\t:: ", histo.title
             
-            for flav in plotConfiguration.listFlavors:
+            for flav in histo.listFlavors:
                 path = plotConfiguration.pathInFile + tagger + "_" + bin + "/" + histo.name + "_" + tagger + "_" + bin + flav
-                
-                if "_B_" in path: 
+               
+                # special treatment for the c-tagger correlation
+                if "correlation" in histo.title:
+                    path = plotConfiguration.pathInFile + tagger + "_" + histo.name + "_" + bin + "/" + "DUSG_vs_B_eff_at_fixedCeff_0_" + flav + "_correlation_" + histo.name + "_" + bin
+                elif "_B_" in path: 
                     path = path.replace("_B_", "_" + flav + "_")
                     path = path.replace(bin + flav, bin)
                 
@@ -121,7 +127,7 @@ for bin in plotConfiguration.EtaPtBin:
             # stop if FlavEffVsBEff_?_discr plot for all the taggers
             # they are stored here and used later for the performance summary plots
             if histo.name == "FlavEffVsBEff_B_discr":
-                for flav in plotConfiguration.listFlavors:
+                for flav in histo.listFlavors:
                     perfAll_Val[flav][tagger] = h_Val[flav]
                     perfAll_Ref[flav][tagger] = h_Ref[flav]
                 continue
@@ -139,17 +145,17 @@ for bin in plotConfiguration.EtaPtBin:
             if len(valHistos) != len(refHistos): print "ERROR"
             
             # compute ratios 
-            if options.doRatio:
+            if options.doRatio and "correlation" not in histo.title:
                 if histo.doPerformance:
                     ratiosList = plotProducer.createRatioFromGraph(keyHisto, valHistos, refHistos)
                 else:
                     ratiosList = plotProducer.createRatio(valHistos, refHistos)
-                #ratios = ratiosList
             else:
                 ratiosList = None
             
             # set name of file
             saveName = keyHisto + "_all"
+            
             # save canvas
             plotProducer.savePlots(
                     title=tagger, 
@@ -160,7 +166,7 @@ for bin in plotConfiguration.EtaPtBin:
                     options=options,
                     ratios=ratiosList,
                     keyHisto=keyHisto,
-                    listLegend=plotConfiguration.listFlavors,
+                    listLegend=histo.listFlavors,
                     legendName=histo.legend
                     )
         
