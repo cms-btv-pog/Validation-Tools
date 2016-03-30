@@ -31,7 +31,7 @@ mypath = os.getcwd()
 pkgpath = ''
 try:
 	
-	pkgpath = os.environ['CMSSW_BASE']+"/src/Validation-Tools/webInterface/templates/"
+	pkgpath = os.environ['CMSSW_BASE']+"/../Validation-Tools/webInterface/templates/"
 
 except LookupError:
 	
