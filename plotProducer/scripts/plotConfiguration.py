@@ -1,13 +1,14 @@
 ####### 
 
-#  automatized plots generator for b-tagging performances
+#  Automatized plots generator for b-tagging performances
 #  Adrien Caudron, 2013, UCL
+#  Sebastien Wertz, 2016, UCL
 
 #######
 
 weight = 1
 pathInFile = "/DQMData/Run 1/Btag/Run summary/"
-drawOption = ""         # "" or "HIST"
+drawOption = "P"         # "" or "HIST"
 
 # ETA/PT bins, GLOBAL ?
 EtaPtBin =[
@@ -30,7 +31,7 @@ listTagB = [
     "JBP",
     "TCHE",
     #"TCHP",
-    "SSVHE",
+    #"SSVHE",
     "SISVHE",
     #"SSVHP",
     "SMT",
@@ -42,9 +43,9 @@ listTagC = [
     "Ctagger_CvsL"
 ]
 
-listTag = listTagB + listTagC
+listTagger = listTagB + listTagC
 
-# list of flavors to look at
+# List of flavors to look at for non-performance plots
 listFlavors = [
         #"ALL",
         "B",
@@ -55,6 +56,10 @@ listFlavors = [
 		#"PU",
         #"NI",
 ]
+
+# list of additional flavors (beside the usual ones) the performance plots should be done against
+#additionalMistagFlavors = ["PU"]
+additionalMistagFlavors = []
 
 # map for marker color for flav-col and tag-col
 mapColor = {
@@ -67,17 +72,17 @@ mapColor = {
     "NI"   : 5 ,
 	"PU"   : 6 ,
     
-    #"CSV"       : 5 ,
+    "CSV"       : 5 ,
 	"CSVv2"		: 15 ,
-	#"combMVA"   : 6 ,
+	"combMVA"   : 6 ,
 	"combMVAv2"   : 16 ,
     "JP"        : 3 ,
     "JBP"       : 9 ,
     "TCHE"      : 1,
-    #"TCHP"      : 2,
+    "TCHP"      : 2,
     "SSVHE"     : 4,
     "SISVHE"     : 7,
-    #"SSVHP"     : 7,
+    "SSVHP"     : 7,
     "SMT"       : 8 ,
     "SET"       : 13 ,
 
@@ -106,6 +111,12 @@ mapLineStyle = {
 
 # choose the formats to save the plots 
 listFormats = [
-    "png",
+    "svg",
 ]
 
+# axis range of the ratio plots
+ratioRangeX = (0.41, 1.59)
+ratioRangeY = (0.91, 1.09)
+
+# Minimum efficiency value when plotting in log scale
+logAxisMinVal = 3*(10**-4)

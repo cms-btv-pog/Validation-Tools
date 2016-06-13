@@ -2,7 +2,7 @@
 
 #######
 
-#  automatized plots generator for b-tagging performances
+#  Automatized plots generator for b-tagging performances
 #  Adrien Caudron, 2013, UCL
 #  Sebastien Wertz, 2016, UCL
 
@@ -17,9 +17,9 @@ plotFactory.py -f BTagRelVal_TTbar_Startup_600.root -F BTagRelVal_TTbar_Startup_
 """
 parser = argparse.ArgumentParser(usage=usage, description=description, epilog=epilog)
 parser.add_argument("-f", "--valInputFile", dest="valPath", default="",
-                  help="Read input file for sample to validated", metavar="VALFILE")
+                  help="Read input file for sample to validated", metavar="VALFILE", required=True)
 parser.add_argument("-F", "--refInputFile", dest="refPath", default="",
-                  help="Read input file for reference sample", metavar="RAFFILE")
+                  help="Read input file for reference sample", metavar="RAFFILE", required=True)
 parser.add_argument("-r", "--valReleaseName", dest="ValRel", default="ToBeVal.",
                   help="Name to refer to the release/conditions to validate, ex: 600, GTV18 ...", metavar="VALREL")
 parser.add_argument("-R", "--refReleaseName", dest="RefRel", default="Reference",
@@ -53,22 +53,31 @@ print "Banner is ",         options.Banner
 print "Make ratio plots ?", options.doRatio
 
 # import all what is needed
+try:
+    import ROOT
+except:
+    print "\nCannot load PYROOT, make sure you have setup ROOT in the path"
+    print "and pyroot library is also defined in the variable PYTHONPATH, try:\n"
+    if (os.getenv("PYTHONPATH")):
+        print " setenv PYTHONPATH ${PYTHONPATH}:$ROOTSYS/lib\n"
+    else:
+        print " setenv PYTHONPATH $ROOTSYS/lib\n"
+        sys.exit()
 import plotProducer
-from plotProducer import ROOT
 import plotConfiguration
 import plotList
 import defaultRootStyle
 
-# define the input root files                                                                                                                                                                              
-if options.valPath and options.refPath:
-    fileVal = ROOT.TFile(options.valPath, "READ")
-    if not fileVal.IsOpen(): raise Exception("Could not open file {}".format(options.valPath))
-    
-    fileRef = ROOT.TFile(options.refPath, "READ")
-    if not fileRef.IsOpen(): raise Exception("Could not open file {}".format(options.refPath))
+# define the input root files
+
+fileVal = ROOT.TFile(options.valPath, "READ")
+if not fileVal.IsOpen(): raise Exception("Could not open file {}".format(options.valPath))
+
+fileRef = ROOT.TFile(options.refPath, "READ")
+if not fileRef.IsOpen(): raise Exception("Could not open file {}".format(options.refPath))
 
 # batch mode ?
-if options.batch : ROOT.gROOT.SetBatch()
+if options.batch: ROOT.gROOT.SetBatch()
 
 # style
 _style = defaultRootStyle.defaultRootStyle()
@@ -84,26 +93,20 @@ for bin in plotConfiguration.EtaPtBin:
     # loop over the histos
     for histo in plotList.listHistos:
 
-        # loop over the whole list of flavors if none was specified
-        if histo.listFlavors is None: histo.listFlavors = plotConfiguration.listFlavors
-        
-        # loop over the whole list of taggers if none was specified
-        if histo.listTagger is None: histo.listTagger = plotConfiguration.listTag
-        
         for flav in histo.listFlavors:
             perfAll_Val[flav] = {}
             perfAll_Ref[flav] = {}
         
         for tagger in histo.listTagger:
             keyHisto = tagger + "_" + histo.name + "_" + bin
-            if histo.doPerformance :
+            if histo.doPerformance:
                 keyHisto = tagger + "_performance_vs_" + histo.tagFlavor + "_" + bin
             
             # loop over the flavours
             h_Val = {}
             h_Ref = {}
             passH = False
-            print tagger, "\t:: ", histo.title
+            print tagger, "\t\t:: ", histo.title
             
             for flav in histo.listFlavors:
                 path = plotConfiguration.pathInFile + tagger + "_" + bin + "/" + histo.name + "_" + tagger + "_" + bin + flav
@@ -115,9 +118,14 @@ for bin in plotConfiguration.EtaPtBin:
                     path = path.replace("_B_", "_" + flav + "_")
                     path = path.replace(bin + flav, bin)
                 
-                # get histos from files
                 h_Val[flav] = fileVal.Get(path)
+                h_Val[flav].SetName(h_Val[flav].GetName() + "_val")
+                h_Val[flav].SetDirectory(0)
+                
                 h_Ref[flav] = fileRef.Get(path)
+                h_Ref[flav].SetName(h_Ref[flav].GetName() + "_ref")
+                h_Ref[flav].SetDirectory(0)
+                
                 if not h_Val[flav] :
                     print "ERROR :", path, "not found in the roofiles, please check the spelling or check if this histogram is present in the rootfile"
                     passH = True
@@ -131,15 +139,15 @@ for bin in plotConfiguration.EtaPtBin:
                     perfAll_Val[flav][tagger] = h_Val[flav]
                     perfAll_Ref[flav][tagger] = h_Ref[flav]
                 continue
-            
+           
             # create final histos   
             if histo.doPerformance:
                 # recreate the performance graphs from the efficiency histograms
-                valHistos = plotProducer.graphProducer(plot=histo, histos=h_Val, isVal=True)
-                refHistos = plotProducer.graphProducer(plot=histo, histos=h_Ref, isVal=False)
+                valHistos = plotProducer.performanceGraphProducer(histoCfg=histo, histos=h_Val, isVal=True)
+                refHistos = plotProducer.performanceGraphProducer(histoCfg=histo, histos=h_Ref, isVal=False)
             else:
-                valHistos = plotProducer.histoProducer(plot=histo, histos=h_Val, isVal=True)
-                refHistos = plotProducer.histoProducer(plot=histo, histos=h_Ref, isVal=False)
+                valHistos = plotProducer.histoProducer(histoCfg=histo, histos=h_Val, isVal=True)
+                refHistos = plotProducer.histoProducer(histoCfg=histo, histos=h_Ref, isVal=False)
             
             if valHistos is None or refHistos is None: continue
             if len(valHistos) != len(refHistos): print "ERROR"
@@ -147,11 +155,14 @@ for bin in plotConfiguration.EtaPtBin:
             # compute ratios 
             if options.doRatio and "correlation" not in histo.title:
                 if histo.doPerformance:
-                    ratiosList = plotProducer.createRatioFromGraph(keyHisto, valHistos, refHistos)
+                    ratiosXList = plotProducer.createRatioFromGraph(keyHisto, valHistos, refHistos)
+                    ratiosYList = plotProducer.createRatioFromGraph(keyHisto, valHistos, refHistos, YRatio=True, logY=histo.logY)
                 else:
-                    ratiosList = plotProducer.createRatio(valHistos, refHistos)
+                    ratiosXList = plotProducer.createRatio(valHistos, refHistos)
+                    ratiosYList = None
             else:
-                ratiosList = None
+                ratiosXList = None
+                ratiosYList = None
             
             # set name of file
             saveName = keyHisto + "_all"
@@ -161,12 +172,12 @@ for bin in plotConfiguration.EtaPtBin:
                     title=tagger, 
                     saveName=saveName,
                     listFormats=plotConfiguration.listFormats,
-                    plot=histo,
-                    histos=valHistos+refHistos,
+                    histoCfg=histo,
+                    histos=valHistos.values() + refHistos.values(),
                     options=options,
-                    ratios=ratiosList,
+                    ratiosX=ratiosXList,
+                    ratiosY=ratiosYList,
                     keyHisto=keyHisto,
-                    listLegend=histo.listFlavors,
                     legendName=histo.legend
                     )
         
@@ -175,8 +186,8 @@ for bin in plotConfiguration.EtaPtBin:
             for flav in ["C", "DUSG"]:
                 for isVal in [True, False]:
                     # setup the histos
-                    if isVal: Histos = plotProducer.histoProducer(plot=histo, histos=perfAll_Val[flav], isVal=isVal)
-                    else: Histos = plotProducer.histoProducer(plot=histo, histos=perfAll_Ref[flav], isVal=isVal)
+                    if isVal: Histos = plotProducer.histoProducer(histoCfg=histo, histos=perfAll_Val[flav], isVal=isVal)
+                    else: Histos = plotProducer.histoProducer(histoCfg=histo, histos=perfAll_Ref[flav], isVal=isVal)
                     
                     # set name of file    
                     if isVal: saveName = "AllTaggers_performance_Bvs" + flav + "_val"
@@ -191,8 +202,8 @@ for bin in plotConfiguration.EtaPtBin:
                             title=title,
                             saveName=saveName,
                             listFormats=plotConfiguration.listFormats,
-                            plot=histo,
-                            histos=Histos,
+                            histoCfg=histo,
+                            histos=[Histos[t] for t in sorted(Histos.keys())],
                             keyHisto=flav+str(isVal),
                             listLegend=histo.listTagger,
                             options=options,
