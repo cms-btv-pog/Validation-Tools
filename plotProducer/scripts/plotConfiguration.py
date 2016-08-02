@@ -111,7 +111,7 @@ mapLineStyle = {
 
 # choose the formats to save the plots 
 listFormats = [
-    "svg",
+    "png",
 ]
 
 # axis range of the ratio plots
