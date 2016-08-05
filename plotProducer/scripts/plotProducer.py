@@ -1,8 +1,9 @@
 
 ####### 
 
-#  automatized plots generator for b-tagging performances
+#  Automatized plots generator for b-tagging performances
 #  Adrien Caudron, 2013, UCL
+#  Sebastien Wertz, 2016, UCL
 
 #######
 
@@ -26,50 +27,60 @@ from ROOT import TLegend
 from ROOT import TLatex
 from ROOT import TH1F
 from ROOT import TF1
+from ROOT import TLine
 from ROOT import TVectorD
 from ROOT import TGraphErrors
 from ROOT import Double
+from array import array
+from math import pow, log10
 
 gErrorIgnoreLevel=2
 
 import defaultRootStyle
 import plotConfiguration
 
-# unity function (to draw a line at "1" on the ratio plots)
-unity = TF1("unity", "1", -1000, 1000)
-unity.SetLineColor(8)
-unity.SetLineWidth(1)
-unity.SetLineStyle(1)
+# unity functions (to draw a line at "1" on the ratio plots)
+unityX = TF1("unityX", "1", -1000, 1000)
+unityX.SetLineColor(8)
+unityX.SetLineWidth(1)
+unityX.SetLineStyle(1)
+
+unityY = TLine(1, plotConfiguration.logAxisMinVal, 1, 1) 
+unityY.SetLineColor(8)
+unityY.SetLineWidth(1)
+unityY.SetLineStyle(1)
 
 
 # Method to do a plot from histos
 # Format all the TH1's in histos[keys..] and return them as a list
-def histoProducer(plot, histos, isVal=True):
+def histoProducer(histoCfg, histos, isVal=True):
     if histos is None: return
     if isVal: sample = "Val"
     else: sample = "Ref"
     
-    outhistos = []
+    outhistos = {}
     minY=9999.
     maxY=0.
     
-    for k in sorted(histos.keys()):
+    for k in histos.keys():
         
         # Binning
-        if plot.binning and len(plot.binning) == 3:
-            histos[k].SetBins(plot.binning[0], plot.binning[1], plot.binning[2])
-        elif plot.binning and len(plot.binning) == 2:
-            nbins = plot.binning[1]+1-plot.binning[0]
-            xmin = histos[k].GetBinLowEdge(plot.binning[0])
-            xmax = histos[k].GetBinLowEdge(plot.binning[1] + 1)
+        if histoCfg.binning and len(histoCfg.binning) == 3:
+            histos[k].SetBins(histoCfg.binning[0], histoCfg.binning[1], histoCfg.binning[2])
+        elif histoCfg.binning and len(histoCfg.binning) == 2:
+            nbins = histoCfg.binning[1] + 1 - histoCfg.binning[0]
+            xmin = histos[k].GetBinLowEdge(histoCfg.binning[0])
+            xmax = histos[k].GetBinLowEdge(histoCfg.binning[1] + 1)
             valtmp = TH1F(histos[k].GetName() + "_rebin", histos[k].GetTitle(), nbins, xmin, xmax)
+            valtmp.SetDirectory(0)
             i=1
-            for bin in range(plot.binning[0], plot.binning[1] + 1):
+            for bin in range(histoCfg.binning[0], histoCfg.binning[1] + 1):
                 valtmp.SetBinContent(i, histos[k].GetBinContent(bin))
                 i += 1
+            del histos[k]
             histos[k] = valtmp
-        if plot.Rebin and plot.Rebin > 0:
-            histos[k].Rebin(plot.Rebin)
+        if histoCfg.Rebin and histoCfg.Rebin > 0:
+            histos[k].Rebin(histoCfg.Rebin)
         
         # Style
         histos[k].SetLineColor(plotConfiguration.mapColor[k])
@@ -84,7 +95,7 @@ def histoProducer(plot, histos, isVal=True):
             histos[k].Sumw2()
         
         # do the norm if asked
-        if plot.doNormalization and histos[k].Integral() > 0:
+        if histoCfg.doNormalization and histos[k].Integral() > 0:
             histos[k].Scale( 1./histos[k].Integral() )
         elif plotConfiguration.weight != 1:
             histos[k].Scale(plotConfiguration.weight)
@@ -94,157 +105,164 @@ def histoProducer(plot, histos, isVal=True):
             minY = histos[k].GetMinimum(0.)
         
         # get Y max
-        if histos[k].GetBinContent(histos[k].GetMaximumBin()) > maxY:
-            maxY = histos[k].GetBinContent( histos[k].GetMaximumBin() ) + histos[k].GetBinError( histos[k].GetMaximumBin() )
+        if histos[k].GetMaximum() > maxY:
+            maxY = histos[k].GetMaximum() + histos[k].GetBinError( histos[k].GetMaximumBin() )
        
         # Axis
-        if plot.Xlabel:
-            histos[k].SetXTitle(plot.Xlabel)
-        if plot.Ylabel:
-            histos[k].SetYTitle(plot.Ylabel)
-        
-        outhistos.append(histos[k])    
+        if histoCfg.Xlabel:
+            histos[k].SetXTitle(histoCfg.Xlabel)
+        if histoCfg.Ylabel:
+            histos[k].SetYTitle(histoCfg.Ylabel)
     
-    # Range
-    if not plot.logY: outhistos[0].GetYaxis().SetRangeUser(0, 1.1*maxY)
-    else: outhistos[0].GetYaxis().SetRangeUser(max(0.0001,0.5*minY), 1.1*maxY)
+        outhistos[k] = histos[k]
+        
+    for k in outhistos.keys():
+        # Range
+        if not histoCfg.logY:
+            outhistos[k].GetYaxis().SetRangeUser(0, 1.1 * maxY)
+        else:
+            outhistos[k].GetYaxis().SetRangeUser(max(plotConfiguration.logAxisMinVal, 0.5 * minY), 1.1 * maxY)
     
     return outhistos        
 
 
 # From the efficiency curves in histos, return a list of performance graphs
 # (for each entry in mistagFlav)
-def graphProducer(plot, histos, tagFlav="B", mistagFlav=["C", "DUSG"], isVal=True):
+def performanceGraphProducer(histoCfg, histos, tagFlav="B", mistagFlav=["C", "DUSG"], isVal=True):
     if histos is None: return
     if isVal: sample = "Val"
     else: sample = "Ref"
     
     # define graphs
     g = {}
-    g_out = []
+    g_out = {}
     if tagFlav not in plotConfiguration.listFlavors:
         print "Error in graphProducer: unknown flavour"
         return
-    if plot.tagFlavor and plot.mistagFlavor:
-        tagFlav = plot.tagFlavor
-        mistagFlav = plot.mistagFlavor
-    for flav in plotConfiguration.listFlavors:
+    if histoCfg.tagFlavor and histoCfg.mistagFlavor:
+        tagFlav = histoCfg.tagFlavor
+        mistagFlav = histoCfg.mistagFlavor
+    for flav in histos.keys():
         # compute errors, in case not already done
         if histos[flav].GetSumw2N() == 0:
                 histos[flav].Sumw2()
+    usedFlavors = [tagFlav] + mistagFlav
     
     # efficiency lists
     Eff = {}
     EffErr = {}
-    for flav in plotConfiguration.listFlavors:
+    for flav in usedFlavors:
         Eff[flav] = []
         EffErr[flav] = []
     
     # define mapping points for the histos
     maxnpoints = histos[tagFlav].GetNbinsX()
     
-    for flav in plotConfiguration.listFlavors:
+    for flav in usedFlavors:
         Eff[flav].append( histos[flav].GetBinContent(1) )
         EffErr[flav].append( histos[flav].GetBinError(1) )
     
     for bin in range(2, maxnpoints+1):
-        if len(Eff[tagFlav]) > 0:
-            # Only add the next point if the efficiency difference in the tag flavour
-            # with the previous point is large enough, to avoid points overlapping on the graph
-            delta = Eff[tagFlav][-1] - histos[tagFlav].GetBinContent(bin)
-            if delta > max(0.005, EffErr[tagFlav][-1]):
-                for flav in plotConfiguration.listFlavors:
-                    Eff[flav].append( histos[flav].GetBinContent(bin) )
-                    EffErr[flav].append( histos[flav].GetBinError(bin) )
+        # Only add the next point if the efficiency difference in the tag flavour
+        # with the previous point is large enough, to avoid points overlapping on the graph
+        delta = Eff[tagFlav][-1] - histos[tagFlav].GetBinContent(bin)
+        if delta > max(0.005, EffErr[tagFlav][-1]):
+            for flav in usedFlavors:
+                Eff[flav].append( histos[flav].GetBinContent(bin) )
+                EffErr[flav].append( histos[flav].GetBinError(bin) )
     
-    # create TVector
+    # Create TVector
     len_ = len(Eff[tagFlav])
     TVec_Eff = {}
     TVec_EffErr = {}
-    for flav in plotConfiguration.listFlavors:
+    for flav in usedFlavors:
         TVec_Eff[flav] = TVectorD(len_)
         TVec_EffErr[flav] = TVectorD(len_)
     
     # Fill the TVectors
-    for flav in plotConfiguration.listFlavors:
+    for flav in usedFlavors:
         for j in range(0, len_):
             TVec_Eff[flav][j] = Eff[flav][j]
             TVec_EffErr[flav][j] = EffErr[flav][j]
     
-    # fill TGraph
     for mis in mistagFlav:
+        
+        # Fill TGraph
         g[ tagFlav+mis ] = TGraphErrors(TVec_Eff[tagFlav], TVec_Eff[mis], TVec_EffErr[tagFlav], TVec_EffErr[mis])
     
-    # set style, add graphs to g_out list
-    for mis in mistagFlav:
+        # Set style
         g[ tagFlav+mis ].SetLineColor( plotConfiguration.mapColor[mis] )
         g[ tagFlav+mis ].SetMarkerStyle( plotConfiguration.mapMarker[sample] )
         g[ tagFlav+mis ].SetMarkerColor( plotConfiguration.mapColor[mis] )
-        g_out.append( g[ tagFlav+mis ] )
     
-    # get the first non-None entry to define axes
-    index = -1     
-    for g_i in g_out:
-        index += 1
-        if g_i is not None: break
-    if index == -1:
-        print "Warning: no graph created"
-        return
+        # Set axes
+        g[ tagFlav+mis ].GetXaxis().SetRangeUser(0, 1)
+        g[ tagFlav+mis ].GetYaxis().SetRangeUser(plotConfiguration.logAxisMinVal, 1)
+        if histoCfg.Xlabel:
+            g[ tagFlav+mis ].GetXaxis().SetTitle(histoCfg.Xlabel)
+        if histoCfg.Ylabel:
+            g[ tagFlav+mis ].GetYaxis().SetTitle(histoCfg.Ylabel)
+
+        g_out[mis] = g[ tagFlav+mis ]
     
-    # set axes
-    g_out[index].GetXaxis().SetRangeUser(0, 1)
-    g_out[index].GetYaxis().SetRangeUser(0.0001, 1)
-    if plot.Xlabel:
-        g_out[index].GetXaxis().SetTitle(plot.Xlabel)
-    if plot.Ylabel:
-        g_out[index].GetYaxis().SetTitle(plot.Ylabel)
-    
-    # add in the list None for element in listFlavors for which no TGraph is computed
-    for index,flav in enumerate(plotConfiguration.listFlavors):
-        if flav not in mistagFlav: g_out.insert(index, None)
     return g_out   
 
 
-# method to draw the plot and save it
-def savePlots(title, saveName, listFormats, plot, histos, keyHisto, listLegend, options, ratios=None, legendName=""):
+# Method to draw the plot and save it
+def savePlots(title, saveName, listFormats, histoCfg, histos, keyHisto, listLegend=None, options=None, ratiosX=None, ratiosY=None, legendName=""):
     
-    # create canvas and pads
+    tmpObjects = []
     pads = {}
-    if options.doRatio:
-        canvas = TCanvas(saveName, keyHisto + plot.title, 700, 700 + 24*len(plotConfiguration.listFlavors))
-        pads["hist"] = TPad("hist", saveName + plot.title, 0, 0.11*len(plotConfiguration.listFlavors), 1.0, 1.0)    
-    else:
-        canvas = TCanvas(keyHisto, saveName + plot.title, 700, 700)
-        pads["hist"] = TPad("hist", saveName + plot.title, 0, 0, 1.0, 1.0)
-    pads["hist"].Draw()
-    if ratios:
-        for r in range(0, len(ratios)):
-            pads[ "ratio_" + str(r) ] = TPad("ratio_" + str(r), saveName + plot.title + str(r), 0, 0.11*r, 1.0, 0.11*(r+1))
-            pads[ "ratio_" + str(r) ].SetTopMargin(0)
-            pads[ "ratio_" + str(r) ].SetBottomMargin(0)
-            pads[ "ratio_" + str(r) ].Draw()
-    pads["hist"].cd()
     
+    try:
+        nRatiosY = len([ r for r in ratiosY.values() if r is not None ])
+    except (TypeError, AttributeError):
+        nRatiosY = 0
+
+    try:
+        nRatiosX = len([ r for r in ratiosX.values() if r is not None ])
+    except (TypeError, AttributeError):
+        nRatiosX = 0
+    
+    if options.doRatio:
+        pads["canvas"] = TCanvas(saveName + "_cnv", keyHisto + histoCfg.title, 700 + 24*nRatiosY, 700 + 24*nRatiosX)
+        pads["base"] = TPad(saveName + "_base", keyHisto + histoCfg.title, 0, 0, 1, 1)
+        pads["base"].Draw()
+        pads["base"].cd()
+        pads["hist"] = TPad(saveName + "_hist", saveName + histoCfg.title, 0, 0.11*nRatiosX, 1 - 0.11*nRatiosY, 1.0)
+    else:
+        pads["canvas"] = TCanvas(saveName + "_cnv", keyHisto + histoCfg.title, 700, 700)
+        pads["base"] = TPad(saveName + "_base", keyHisto + histoCfg.title, 0, 0, 1, 1)
+        pads["base"].Draw()
+        pads["base"].cd()
+        pads["hist"] = TPad(saveName + "_hist", saveName + histoCfg.title, 0, 0, 1.0, 1.0)
+    pads["hist"].Draw()
+    pads["hist"].cd()
+   
     # set pad style
-    if plot.logY: pads["hist"].SetLogy()
-    if plot.grid: pads["hist"].SetGrid()
+    if histoCfg.logY: pads["hist"].SetLogy()
+    if histoCfg.grid: pads["hist"].SetGrid()
 
     # Draw histos
     first = True
     option = plotConfiguration.drawOption
     optionSame = plotConfiguration.drawOption + "same"
+    xHistMin = 0
+    xHistMax = 1
     # if the plot is a performance curve, it's a TGraph => change drawing options
-    if plot.doPerformance:
+    if histoCfg.doPerformance:
         option = "AP"
         optionSame = "sameP"
-    for i in range(0, len(histos)):
-        if histos[i] is None: continue
+    for h in histos:
+        if h is None: continue
         if first:
-            if not plot.doPerformance: histos[i].GetPainter().PaintStat(ROOT.gStyle.GetOptStat(), 0)
-            histos[i].SetTitle(title)
-            histos[i].Draw(option)
+            if not histoCfg.doPerformance: h.GetPainter().PaintStat(ROOT.gStyle.GetOptStat(), 0)
+            h.SetTitle(title)
+            h.Draw(option)
+            xHistMin = h.GetXaxis().GetXmin()
+            xHistMax = h.GetXaxis().GetXmax()
             first = False
-        else: histos[i].Draw(optionSame)
+        else: h.Draw(optionSame)
 
     # Create legend
     leg = TLegend(0.0, 0.0, 0.1, 0.1, "", "NDC")
@@ -254,35 +272,35 @@ def savePlots(title, saveName, listFormats, plot, histos, keyHisto, listLegend, 
     abs_left  = 0.0+0.03 + pads["hist"].GetLeftMargin()
     abs_top   = 1.0-0.03 - pads["hist"].GetTopMargin()
     abs_bot   = 0.0+0.03 + pads["hist"].GetBottomMargin()
-    width = 0.15
+    width = 0.25
     height = 0.3
 
-    if plot.legendPosition == "top-left":
+    if histoCfg.legendPosition == "top-left":
         x_min = abs_left
         x_max = abs_left + width
         y_min = abs_top - height
         y_max = abs_top
-    elif plot.legendPosition == "top-right":
+    elif histoCfg.legendPosition == "top-right":
         x_min = abs_right - width
         x_max = abs_right
         y_min = abs_top - height
         y_max = abs_top
-    elif plot.legendPosition == "top-center":
+    elif histoCfg.legendPosition == "top-center":
         x_min = 0.5 - width/2.0
         x_max = 0.5 + width/2.0
         y_min = abs_top - height
         y_max = abs_top
-    elif plot.legendPosition == "bottom-left":
+    elif histoCfg.legendPosition == "bottom-left":
         x_min = abs_left
         x_max = abs_left + width
         y_min = abs_bot
         y_max = abs_bot + height
-    elif plot.legendPosition == "bottom-right":
+    elif histoCfg.legendPosition == "bottom-right":
         x_min = abs_right - width
         x_max = abs_right
         y_min = abs_top
         y_max = abs_bot + height
-    elif plot.legendPosition == "bottom-center":
+    elif histoCfg.legendPosition == "bottom-center":
         x_min = 0.5 - width/2.0
         x_max = 0.5 + width/2.0
         y_min = abs_bot
@@ -299,7 +317,7 @@ def savePlots(title, saveName, listFormats, plot, histos, keyHisto, listLegend, 
     leg.SetY2(y_max)
 
     leg.SetMargin(0.12)
-    leg.SetTextSize(0.035)
+    leg.SetTextSize(0.04)
     leg.SetFillColor(10)
     leg.SetBorderSize(0)
     
@@ -313,17 +331,22 @@ def savePlots(title, saveName, listFormats, plot, histos, keyHisto, listLegend, 
 
     # define legend entries for different flavours from dummy histos
     flavorColor = {}
+    if listLegend is None:
+        if histoCfg.doPerformance:
+            listLegend = histoCfg.mistagFlavor
+        else:
+            listLegend = histoCfg.listFlavors
     for flavor in listLegend:
         flavorColor[flavor] = TH1F("dummy_" + flavor, "", 1, 0, 1)
         flavorColor[flavor].SetMarkerStyle(21)
         flavorColor[flavor].SetMarkerColor(plotConfiguration.mapColor[flavor])
         legText = flavor + " jets"
         # special treatment for c-tagger correlation
-        legText = legText.replace("0000 jets", "%% c-jet eff.")
+        legText = legText.replace("0000 jets", r"% c-jet eff.")
         leg.AddEntry(flavorColor[flavor], legText, "P")
 
     # Draw legend
-    if plot.legend and options.drawLegend: leg.Draw("same")
+    if histoCfg.legend and options.drawLegend: leg.Draw("same")
     
     # Draw banner
     tex = None
@@ -333,74 +356,160 @@ def savePlots(title, saveName, listFormats, plot, histos, keyHisto, listLegend, 
         tex.SetNDC()
         tex.SetTextSize(0.05)
         tex.Draw()
-    
+ 
     # Define ratios
-    if ratios:
-        for r in range(0, len(ratios)):
-            if ratios[r] is None: continue
-            pads[ "ratio_" + str(r) ].cd()
-            pads[ "ratio_" + str(r) ].SetGrid()
-            ratios[r].SetTitle("")
-            ratios[r].GetYaxis().SetTitle(listLegend[r] + "-jets")
-            ratios[r].GetYaxis().SetTitleSize(0.2)
-            ratios[r].GetYaxis().SetTitleOffset(0.2)
-            ratios[r].GetYaxis().CenterTitle()
-            ratios[r].GetYaxis().SetNdivisions(3, 3, 2)
-            ratios[r].GetXaxis().SetLabelSize(0.0)
-            ratios[r].Draw("")
-            unity.Draw("same")
+   
+    if ratiosX:
+        pos = 0
+        for flav in sorted(ratiosX.keys()):
+            if ratiosX[flav] is None: continue
+           
+            padName = "ratioX_" + flav
+            pads["base"].cd()
+            pads[padName] = TPad(saveName + histoCfg.title + padName, padName, 0, 0.11*pos, 1 - 0.11*nRatiosY, 0.11*(pos+1))
+            pads[padName].Draw()
+            pads[padName].cd()
+            pads[padName].SetTopMargin(0)
+            pads[padName].SetBottomMargin(0)
+            pads[padName].SetGrid()
+    
+            tmp_h = TH1F(saveName + histoCfg.title + "tmp_X_" + flav, "", 1, xHistMin, xHistMax)
+            tmp_h.SetDirectory(0)
+            tmp_h.GetYaxis().SetTitle(flav + "-jets")
+            tmp_h.GetYaxis().SetTitleSize(0.2)
+            tmp_h.GetYaxis().SetTitleOffset(0.2)
+            tmp_h.GetYaxis().CenterTitle()
+            tmp_h.GetYaxis().SetNdivisions(6, 2, 0)
+            tmp_h.GetYaxis().SetLabelSize(0.15)
+            tmp_h.GetYaxis().SetRangeUser(plotConfiguration.ratioRangeX[0], plotConfiguration.ratioRangeX[1])
+            tmp_h.GetXaxis().SetNdivisions(5, 5, 0, 0)
+            tmp_h.GetXaxis().SetLabelSize(0.0)
+            tmp_h.Draw()
+            tmpObjects.append(tmp_h)
+            if ratiosX[flav].InheritsFrom("TH1"):
+                ratiosX[flav].Draw("Psame")
+            else:
+                ratiosX[flav].Draw("P")
+            unityX.Draw("same")
+            
+            pos += 1
+    
+    if ratiosY:
+        pos = 0
+        for flav in sorted(ratiosY.keys()):
+            if ratiosY[flav] is None: continue
+            
+            padName = "ratioY_" + flav
+            pads["base"].cd()
+            pads[padName] = TPad(saveName + histoCfg.title + padName, saveName + histoCfg.title + str(r), 1-0.11*(nRatiosY-pos), 0.11*nRatiosX, 1-0.11*(nRatiosY-(pos+1)), 1)
+            pads[padName].Draw()
+            pads[padName].cd()
+            pads[padName].SetLeftMargin(0)
+            if pos == nRatiosY - 1:
+                pads[padName].SetRightMargin(0.15)
+            else:
+                pads[padName].SetRightMargin(0)
+            pads[padName].SetGrid()
+   
+            if histoCfg.logY: pads[padName].SetLogy()
+            tmp_h = TH1F(saveName + histoCfg.title + "tmp_Y_" + flav, "", 1, plotConfiguration.ratioRangeY[0], plotConfiguration.ratioRangeY[1])
+            tmp_h.SetDirectory(0)
+            tmp_h.GetXaxis().SetTitle(flav + "-jets")
+            tmp_h.GetXaxis().SetTitleSize(0.2)
+            tmp_h.GetXaxis().SetTitleOffset(0.2)
+            tmp_h.GetXaxis().CenterTitle()
+            tmp_h.GetXaxis().SetNdivisions(5)
+            tmp_h.GetXaxis().SetLabelSize(0.15)
+            tmp_h.GetXaxis().SetLabelOffset(0)
+            tmp_h.GetYaxis().SetLabelSize(0)
+            tmp_h.GetYaxis().SetRangeUser(plotConfiguration.logAxisMinVal, 1)
+            tmp_h.Draw()
+            tmpObjects.append(tmp_h)
+            if ratiosY[flav].InheritsFrom("TH1"):
+                ratiosY[flav].Draw("Psame")
+            else:
+                ratiosY[flav].Draw("P")
+            unityY.Draw("same")
+            
+            pos += 1
     
     # Save canvas
     for format in plotConfiguration.listFormats:
         save = saveName + "." + format
-        canvas.Print(save)
+        pads["canvas"].Print(save)
     
-    return [canvas, leg, tex, pads]    
-
 
 # returns ratio plots created from two histogram lists
 def createRatio(hVal, hRef):
-    ratios = []
+    if hVal.keys() != hRef.keys():
+        raise Exception("Flavour keys are not the same")
     
-    for h_i in range(0, len(hVal)): 
-        if hVal[h_i] is None: continue
-        r = TH1F(hVal[h_i].GetName() + "ratio", "ratio " + hVal[h_i].GetTitle(), hVal[h_i].GetNbinsX(), hVal[h_i].GetXaxis().GetXmin(), hVal[h_i].GetXaxis().GetXmax())
-        r.Add(hVal[h_i])
-        r.Divide(hRef[h_i])
-        r.GetYaxis().SetRangeUser(0.25,1.75)
-        r.SetMarkerColor(hVal[h_i].GetMarkerColor())
-        r.SetLineColor(hVal[h_i].GetLineColor())
-        r.GetYaxis().SetLabelSize(0.15)
-        r.GetXaxis().SetLabelSize(0.15)
-        ratios.append(r)
+    ratios = {}
+    
+    for flav in hVal.keys(): 
+        if hVal[flav] is None: continue
+        r = TH1F(hVal[flav].GetName() + "ratio", "ratio " + hVal[flav].GetTitle(), hVal[flav].GetNbinsX(), hVal[flav].GetXaxis().GetXmin(), hVal[flav].GetXaxis().GetXmax())
+        r.Add(hVal[flav])
+        r.Divide(hRef[flav])
+        r.SetMarkerColor(hVal[flav].GetMarkerColor())
+        r.SetLineColor(hVal[flav].GetLineColor())
+        ratios[flav] = r
     
     return ratios
 
 
 # returns ratio plots created from two lists of TGraphErrors
 # since the points can have different X-values, one needs to interpolate
-def createRatioFromGraph(key, hVal, hRef):
-    ratios = []
+def createRatioFromGraph(key, hVal, hRef, YRatio=False, logY=False):
+    if hVal.keys() != hRef.keys():
+        raise Exception("Flavour keys are not the same")
     
-    for g_i in range(0, len(hVal)):
-        if hVal[g_i] is None:
-            ratios.append(None)
+    ratios = {}
+
+    for flav in hVal.keys():
+        if hVal[flav] is None:
+            #ratios.append(None)
             continue
         
         # Create histograms that will be divided to give the ratio, using the Val graph to fix the axis range
-        tmp = hVal[g_i].GetHistogram()
-        histVal = TH1F(key + "_ratio_val_" + str(g_i), "", tmp.GetNbinsX(), tmp.GetXaxis().GetXmin(), tmp.GetXaxis().GetXmax())
-        histRef = TH1F(key + "_ratio_ref_" + str(g_i), "", tmp.GetNbinsX(), tmp.GetXaxis().GetXmin(), tmp.GetXaxis().GetXmax())
+        if YRatio:
+            graphVal = ROOT.TGraphErrors(hVal[flav].GetN(), hVal[flav].GetY(), hVal[flav].GetX(), hVal[flav].GetEY(), hVal[flav].GetEX())
+            graphRef = ROOT.TGraphErrors(hRef[flav].GetN(), hRef[flav].GetY(), hRef[flav].GetX(), hRef[flav].GetEY(), hRef[flav].GetEX())
+            tmp = graphVal.GetHistogram()
+        else:
+            graphVal = hVal[flav]
+            graphRef = hRef[flav]
+            tmp = graphVal.GetHistogram()
+
+        # Define the binning of the histograms that will be divided to compute the ratio
+        # If the scale is log, we have to do some black magic so that the bins are equally
+        # wide in log-scale
+        nBins = 10*tmp.GetNbinsX()
+        lowEdge = tmp.GetXaxis().GetXmin()
+        highEdge = tmp.GetXaxis().GetXmax()
+ 
+        if not YRatio or (YRatio and not logY):
+            histVal = TH1F(key + "_ratio_val_" + str(flav) + str(YRatio), "", nBins, lowEdge, highEdge)
+            histRef = TH1F(key + "_ratio_ref_" + str(flav) + str(YRatio), "", nBins, lowEdge, highEdge)
+        if YRatio and logY:
+            if lowEdge <= 0:
+                lowEdge = plotConfiguration.logAxisMinVal
+            binArray = [ lowEdge ]
+            for i in range(1, nBins + 1):
+                binArray.append( pow(10, log10(lowEdge) + i * (log10(highEdge) - log10(lowEdge))/nBins) )
+            binArray = array('f', binArray)
+            histVal = TH1F(key + "_ratio_val_" + str(flav) + str(YRatio), "", nBins, binArray)
+            histRef = TH1F(key + "_ratio_ref_" + str(flav) + str(YRatio), "", nBins, binArray)
         
         # loop over the N points
-        for p in range(0, hVal[g_i].GetN()-1):
+        for p in range(0, graphVal.GetN()):
             
             # get point p from Val graph, find corresponding histogram bin
             x = Double(0)
             y = Double(0)
-            hVal[g_i].GetPoint(p, x, y)
-            xerr = hVal[g_i].GetErrorX(p)
-            yerr = hVal[g_i].GetErrorY(p)
+            graphVal.GetPoint(p, x, y)
+            xerr = graphVal.GetErrorX(p)
+            yerr = graphVal.GetErrorY(p)
             bin_p = histVal.FindBin(x)
             xHist = histVal.GetBinCenter(bin_p)
             
@@ -417,17 +526,18 @@ def createRatioFromGraph(key, hVal, hRef):
             # Get nearest point to p, in the direction from p to the center of the Val histogram bin
             # This point will serve to interpolate with p, to define the histogram bin
             # Keeping in mind that points in the graph are ordered from high x to low x
+            if (xHist < x and p == graphVal.GetN() - 1) or (xHist > x and p == 0):
+                continue
             if xHist > x: 
-                if p == 0: continue
-                xbiserr = hVal[g_i].GetErrorX(p-1)
-                ybiserr = hVal[g_i].GetErrorY(p-1)
-                hVal[g_i].GetPoint(p-1, xbis, ybis)
+                xbiserr = graphVal.GetErrorX(p-1)
+                ybiserr = graphVal.GetErrorY(p-1)
+                graphVal.GetPoint(p-1, xbis, ybis)
             else:
-                xbiserr = hVal[g_i].GetErrorX(p+1)
-                ybiserr = hVal[g_i].GetErrorY(p+1)
-                hVal[g_i].GetPoint(p+1, xbis, ybis)
+                xbiserr = graphVal.GetErrorX(p+1)
+                ybiserr = graphVal.GetErrorY(p+1)
+                graphVal.GetPoint(p+1, xbis, ybis)
             
-            if ybis == y: 
+            if xbis == x: 
                 # just take y at x
                 bin_p_valContent = y
                 bin_p_valContent_errP = y + yerr
@@ -450,37 +560,34 @@ def createRatioFromGraph(key, hVal, hRef):
             histVal.SetBinError(bin_p, (bin_p_valContent_errP-bin_p_valContent_errM)/2)
             
             # loop over the reference TGraph to get the corresponding point
-            for pRef in range(0, hRef[g_i].GetN()):
+            for pRef in range(1, graphRef.GetN()):
                 
                 # get point pRef
                 xRef = Double(0)
                 yRef = Double(0)
-                hRef[g_i].GetPoint(pRef,xRef,yRef)
+                graphRef.GetPoint(pRef, xRef, yRef)
                 
                 # take the first point as xRef < xHist
-                if xRef > xHist: continue
-                xReferr = hRef[g_i].GetErrorX(pRef)
-                yReferr = hRef[g_i].GetErrorY(pRef)
+                if xRef > xHist:
+                    continue
+                xReferr = graphRef.GetErrorX(pRef)
+                yReferr = graphRef.GetErrorY(pRef)
                 
                 # get the other point as xHist in [xRef,xRefbis]
                 xRefbis = Double(0)
                 yRefbis = Double(0)
-                xRefbiserr = hRef[g_i].GetErrorX(pRef + 1)
-                yRefbiserr = hRef[g_i].GetErrorY(pRef + 1)
-                hRef[g_i].GetPoint(pRef + 1, xRefbis, yRefbis)
+                xRefbiserr = graphRef.GetErrorX(pRef - 1)
+                yRefbiserr = graphRef.GetErrorY(pRef - 1)
+                graphRef.GetPoint(pRef - 1, xRefbis, yRefbis)
                 
-                if yRefbis == yRef:
+                if xbis == x or xRefbis == xRef:
                     # just take yRef at xRef
                     bin_p_refContent = yRef
                     bin_p_refContent_errP = yRef + yReferr
                     bin_p_refContent_errM = yRef - yReferr
-                elif xRefbis == xRef:
-                    bin_p_refContent = 0
-                    bin_p_refContent_errP = 0
-                    bin_p_refContent_errM = 0
                 else:
                     # do a linear extrapolation (equivalent to do Eval(xHist))
-                    aRef = (ybis-y)/(xbis-x)
+                    aRef = (yRefbis-yRef)/(xRefbis-xRef)
                     bRef = yRef-aRef*xRef
                     bin_p_refContent = aRef*xHist+bRef
                     # extrapolate the error
@@ -502,15 +609,22 @@ def createRatioFromGraph(key, hVal, hRef):
         if histRef.GetSumw2N() == 0:
             histRef.Sumw2()
         histVal.Divide(histRef)
+       
+        m_graph = ROOT.TGraphAsymmErrors(histVal.GetNbinsX())
         
-        # ratio style
-        histVal.GetXaxis().SetRangeUser(0., 1.)
-        histVal.GetYaxis().SetRangeUser(0.25, 1.75)
-        histVal.SetMarkerColor(hVal[g_i].GetMarkerColor())
-        histVal.SetLineColor(hVal[g_i].GetLineColor())
-        histVal.GetYaxis().SetLabelSize(0.15)
-        histVal.GetXaxis().SetLabelSize(0.15)
+        for bin in range(0, histVal.GetNbinsX()):
+            
+            if YRatio:
+                m_graph.SetPoint(bin, histVal.GetBinContent(bin + 1), histVal.GetBinCenter(bin + 1))
+                m_graph.SetPointError(bin, histVal.GetBinErrorLow(bin + 1), histVal.GetBinErrorUp(bin + 1), 0, 0)
+            
+            else:
+                m_graph.SetPoint(bin, histVal.GetBinCenter(bin + 1), histVal.GetBinContent(bin + 1))
+                m_graph.SetPointError(bin, 0, 0, histVal.GetBinErrorLow(bin + 1), histVal.GetBinErrorUp(bin + 1))
+
+        m_graph.SetMarkerColor(hVal[flav].GetMarkerColor())
+        m_graph.SetLineColor(hVal[flav].GetLineColor())
         
-        ratios.append(histVal)
+        ratios[flav] = m_graph
     
     return ratios

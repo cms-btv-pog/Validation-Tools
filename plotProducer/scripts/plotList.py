@@ -1,13 +1,13 @@
 
 ####### 
 
-#  automatized plots generator for b-tagging performances
+#  Automatized plots generator for b-tagging performances
 #  Adrien Caudron, 2013, UCL
+#  Sebastien Wertz, 2016, UCL
 
 #######
 
-# Needed to differentiate performance plots were target = B or C
-from plotConfiguration import listTagB, listTagC, listFlavors
+import plotConfiguration
 
 class plotInfo :
     def __init__ (self, name,
@@ -42,11 +42,14 @@ class plotInfo :
             self.tagFlavor = tagFlavor
             self.mistagFlavor = mistagFlavor
         if listTagger is None:
-            self.listTagger = None                # you will take the list of tagger defined centrally
+            self.listTagger = plotConfiguration.listTagger # take the list of tagger defined centrally
         else:
-            self.listTagger = listTagger          # you take the list passed as argument
+            self.listTagger = listTagger          # take the list passed as argument
         if listFlavors is None:
-            self.listFlavors = None                 # same thing for flavors
+            if self.doPerformance: # if it's a performance plot, only consider the flavors taken to be tag or mistag
+                self.listFlavors = [tagFlavor] + mistagFlavor
+            else:
+                self.listFlavors = plotConfiguration.listFlavors                 # same thing for flavors
         else:
             self.listFlavors = listFlavors
 
@@ -118,7 +121,7 @@ FlavEffVsBEff_discr = plotInfo(name="FlavEffVsBEff_B_discr",
                                Xlabel="b-tag efficiency", 
                                Ylabel="Non b-tag efficiency",
                                logY=True, grid=True,
-                               listTagger=listTagB
+                               listTagger=plotConfiguration.listTagB
                                )
 
 # MC only
@@ -131,8 +134,8 @@ performance = plotInfo(name="effVsDiscrCut_discr",
                        logY=True, grid=True, 
                        doPerformance=True, 
                        tagFlavor="B", 
-                       mistagFlavor=["C","DUSG"],
-                       listTagger=listTagB
+                       mistagFlavor=["C", "DUSG"] + plotConfiguration.additionalMistagFlavors,
+                       listTagger=plotConfiguration.listTagB
                        )
 
 # MC only, to do C vs B
@@ -145,7 +148,7 @@ performanceCvsB = plotInfo(name="effVsDiscrCut_discr",
                         logY=True, grid=True, 
                         doPerformance=True, 
                         tagFlavor="C", 
-                        mistagFlavor=["B"],
+                        mistagFlavor=["B"] + plotConfiguration.additionalMistagFlavors,
                         listTagger=["Ctagger_CvsB"]
                        )
 
@@ -159,7 +162,7 @@ performanceCvsL = plotInfo(name="effVsDiscrCut_discr",
                         logY=True, grid=True, 
                         doPerformance=True, 
                         tagFlavor="C", 
-                        mistagFlavor=["DUSG"],
+                        mistagFlavor=["DUSG"] + plotConfiguration.additionalMistagFlavors,
                         listTagger=["Ctagger_CvsL"]
                        )
 
@@ -209,7 +212,7 @@ IP2 = plotInfo(name="ip2_3D",
               Ylabel="Arbitrary units",
               logY=False, grid=False,
               binning=None,Rebin=None, 
-              doNormalization=True,#
+              doNormalization=True,
               listTagger=["IPTag"]
               )
 
@@ -624,11 +627,11 @@ trackPParRatio = plotInfo(name="trackPParRatio",
 
 # list of histos to plots
 listHistos = [
-    ### Kinematic
+    ##### Kinematic
     jetPt,
     jetEta,
 
-    ### Algorithm performances
+    ##### Algorithm performances
     discr,
     effVsDiscrCut_discr,
     FlavEffVsBEff_discr,
@@ -637,7 +640,7 @@ listHistos = [
     performanceCvsL,
     correlationC,
 
-    ## Low-level variables
+    #### Low-level variables
     IP,
     IPe,
     IPs,
