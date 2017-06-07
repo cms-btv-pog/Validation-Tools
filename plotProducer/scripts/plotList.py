@@ -20,7 +20,7 @@ class plotInfo :
                   binning=None, Rebin=None,
                   doNormalization=False,
                   listTagger=None, listFlavors=None,
-                  doPerformance=False, tagFlavor="B", mistagFlavor=["C","DUSG"]):
+                  doPerformance=False, tagFlavor="B", mistagFlavor=plotConfiguration.mistagFlavors_tagB):
         self.name = name                        # name of the histos without postfix as PT/ETA bin or flavor
         self.title = title                      # title of the histograms : better if specific for the histogram
         self.legend = legend                    # legend name, if contain 'KEY', it will be replace by the list of keys you provide (as flavor, tagger ...)
@@ -77,7 +77,8 @@ jetEta = plotInfo(name="jetEta",
                   Xlabel="#eta", 
                   Ylabel="Arbitrary units",
                   logY=False, grid=False,
-                  binning=[11,90], Rebin=4, 
+                  binning=[11,90],
+                  Rebin=4, 
                   doNormalization=True,
                   listTagger=["CSVv2"]
                   )
@@ -134,7 +135,7 @@ performance = plotInfo(name="effVsDiscrCut_discr",
                        logY=True, grid=True, 
                        doPerformance=True, 
                        tagFlavor="B", 
-                       mistagFlavor=["C", "DUSG"] + plotConfiguration.additionalMistagFlavors,
+                       mistagFlavor=plotConfiguration.mistagFlavors_tagB,
                        listTagger=plotConfiguration.listTagB
                        )
 
@@ -148,8 +149,8 @@ performanceCvsB = plotInfo(name="effVsDiscrCut_discr",
                         logY=True, grid=True, 
                         doPerformance=True, 
                         tagFlavor="C", 
-                        mistagFlavor=["B"] + plotConfiguration.additionalMistagFlavors,
-                        listTagger=["Ctagger_CvsB"]
+                        mistagFlavor=plotConfiguration.mistagFlavors_tagC_vs_B,
+                        listTagger=listTagC_vs_B
                        )
 
 # MC only, to do C vs light
@@ -162,8 +163,8 @@ performanceCvsL = plotInfo(name="effVsDiscrCut_discr",
                         logY=True, grid=True, 
                         doPerformance=True, 
                         tagFlavor="C", 
-                        mistagFlavor=["DUSG"] + plotConfiguration.additionalMistagFlavors,
-                        listTagger=["Ctagger_CvsL"]
+                        mistagFlavor=plotConfiguration.mistagFlavors_tagC_vs_L,
+                        listTagger=listTagC_vs_L 
                        )
 
 # track infos
@@ -625,6 +626,66 @@ trackPParRatio = plotInfo(name="trackPParRatio",
                           listTagger=["CSVTag"]
                           )
 
+leptonDeltaR = plotInfo(name="leptonDeltaR",
+                          title="momentum of the soft lepton over jet energy",
+                          legend="isVal KEY-jets",
+                          legendPosition="top-left",
+                          Xlabel="momentum of the soft lepton over jet energy",
+                          Ylabel="Arbitrary units",
+                          logY=False, grid=False,
+                          binning=None, Rebin=None,
+                          doNormalization=True,
+                          listTagger=["CtaggerTag"]
+                          )
+
+leptonEtaRel = plotInfo(name="leptonEtaRel",
+                          title="pseudo-angular distance of the soft lepton to jet axis",
+                          legend="isVal KEY-jets",
+                          legendPosition="top-left",
+                          Xlabel="pseudo-angular distance of the soft lepton to jet axis",
+                          Ylabel="Arbitrary units",
+                          logY=False, grid=False,
+                          binning=None, Rebin=None,
+                          doNormalization=True,
+                          listTagger=["CtaggerTag"]
+                          )
+
+leptonPtRel = plotInfo(name="leptonPtRel",
+                          title="momentum of the soft lepton along the jet direction, in the jet rest frame",
+                          legend="isVal KEY-jets",
+                          legendPosition="top-left",
+                          Xlabel="momentum of the soft lepton along the jet direction, in the jet rest frame",
+                          Ylabel="Arbitrary units",
+                          logY=False, grid=False,
+                          binning=None, Rebin=None,
+                          doNormalization=True,
+                          listTagger=["CtaggerTag"]
+                          )
+
+leptonRatio = plotInfo(name="leptonRatio",
+                          title="momentum of the soft lepton parallel to jet axis over jet energy",
+                          legend="isVal KEY-jets",
+                          legendPosition="top-left",
+                          Xlabel="momentum of the soft lepton parallel to jet axis over jet energy",
+                          Ylabel="Arbitrary units",
+                          logY=False, grid=False,
+                          binning=None, Rebin=None,
+                          doNormalization=True,
+                          listTagger=["CtaggerTag"]
+                          )
+
+leptonSip3d = plotInfo(name="leptonSip3d",
+                          title="IP significance of soft lepton",
+                          legend="isVal KEY-jets",
+                          legendPosition="top-left",
+                          Xlabel="IP significance of soft lepton",
+                          Ylabel="Arbitrary units",
+                          logY=False, grid=False,
+                          binning=None, Rebin=None,
+                          doNormalization=True,
+                          listTagger=["CtaggerTag"]
+                          )
+
 # list of histos to plots
 listHistos = [
     ##### Kinematic
@@ -679,5 +740,11 @@ listHistos = [
     trackNHits,
     trackNPixelHits,
     trackNormChi2,
+
+    leptonDeltaR,
+    leptonEtaRel,
+    leptonPtRel,
+    leptonRatio,
+    leptonSip3d
 ]
 

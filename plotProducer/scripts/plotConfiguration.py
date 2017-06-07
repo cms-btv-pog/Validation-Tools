@@ -22,28 +22,33 @@ EtaPtBin =[
 # list of taggers to look at, divided in B- or C-taggers
 # (needed to distinguish performance plots)
 listTagB = [
-    #"CSV",
 	"CSVv2",
-	#"combMVA",
 	"combMVAv2",
-    #"CSVMVA",
+    "deepCSV_probb",
+    "deepCSV_probudsg",
+    "deepCSV_probbb",
     "JP",
     "JBP",
     "TCHE",
-    #"TCHP",
-    #"SSVHE",
     "SISVHE",
-    #"SSVHP",
     "SMT",
     "SET",
 ]
+mistagFlavors_tagB = ["C", "DUSG"]
+#mistagFlavors_tagB = ["C", "NI"]
 
-listTagC = [
-    "Ctagger_CvsB",
+listTagC_vs_L = [
+    "deepCSV_probc",
     "Ctagger_CvsL"
 ]
+mistagFlavors_tagC_vs_L = ["DUSG"]
 
-listTagger = listTagB + listTagC
+listTagC_vs_B = [
+    "Ctagger_CvsB",
+]
+mistagFlavors_tagC_vs_B = ["B"]
+
+listTagger = listTagB + listTagC_vs_L + listTagC_vs_B
 
 # List of flavors to look at for non-performance plots
 listFlavors = [
@@ -57,10 +62,6 @@ listFlavors = [
         #"NI",
 ]
 
-# list of additional flavors (beside the usual ones) the performance plots should be done against
-#additionalMistagFlavors = ["PU"]
-additionalMistagFlavors = []
-
 # map for marker color for flav-col and tag-col
 mapColor = {
     "ALL"  : 4 ,
@@ -69,20 +70,20 @@ mapColor = {
     "G"    : 860 ,
     "DUS"  : 860 ,
     "DUSG" : 860 ,
-    "NI"   : 5 ,
+    "NI"   : 860,#5 ,
 	"PU"   : 6 ,
     
-    "CSV"       : 5 ,
 	"CSVv2"		: 15 ,
-	"combMVA"   : 6 ,
 	"combMVAv2"   : 16 ,
+    "deepCSV_probb" : 2,
+    "deepCSV_probc" : 5,
+    "deepCSV_probudsg" : 6,
+    "deepCSV_probbb" : 7,
     "JP"        : 3 ,
     "JBP"       : 9 ,
     "TCHE"      : 1,
-    "TCHP"      : 2,
     "SSVHE"     : 4,
     "SISVHE"     : 7,
-    "SSVHP"     : 7,
     "SMT"       : 8 ,
     "SET"       : 13 ,
 
