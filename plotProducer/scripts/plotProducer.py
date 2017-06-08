@@ -259,6 +259,11 @@ def savePlots(title, saveName, listFormats, histoCfg, histos, keyHisto, listLege
             if not histoCfg.doPerformance: h.GetPainter().PaintStat(ROOT.gStyle.GetOptStat(), 0)
             h.SetTitle(title)
             h.Draw(option)
+            ### FIX RANGE
+            if histoCfg.doPerformance:
+                h.GetXaxis().SetRangeUser(0,1)
+                h.Draw(option)
+                pads["hist"].Update()
             xHistMin = h.GetXaxis().GetXmin()
             xHistMax = h.GetXaxis().GetXmax()
             first = False

@@ -173,7 +173,7 @@ for bin in plotConfiguration.EtaPtBin:
                     saveName=saveName,
                     listFormats=plotConfiguration.listFormats,
                     histoCfg=histo,
-                    histos=valHistos.values() + refHistos.values(),
+                    histos=refHistos.values() + valHistos.values(),
                     options=options,
                     ratiosX=ratiosXList,
                     ratiosY=ratiosYList,
@@ -183,7 +183,7 @@ for bin in plotConfiguration.EtaPtBin:
         
         # for FlavEffVsBEff_B_discr (performance summaries)
         if histo.name == "FlavEffVsBEff_B_discr":
-            for flav in ["C", "DUSG"]:
+            for flav in plotConfiguration.mistagFlavors_tagB:
                 for isVal in [True, False]:
                     # setup the histos
                     if isVal: Histos = plotProducer.histoProducer(histoCfg=histo, histos=perfAll_Val[flav], isVal=isVal)
