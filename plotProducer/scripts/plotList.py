@@ -150,7 +150,7 @@ performanceCvsB = plotInfo(name="effVsDiscrCut_discr",
                         doPerformance=True, 
                         tagFlavor="C", 
                         mistagFlavor=plotConfiguration.mistagFlavors_tagC_vs_B,
-                        listTagger=listTagC_vs_B
+                        listTagger=plotConfiguration.listTagC_vs_B
                        )
 
 # MC only, to do C vs light
@@ -164,7 +164,7 @@ performanceCvsL = plotInfo(name="effVsDiscrCut_discr",
                         doPerformance=True, 
                         tagFlavor="C", 
                         mistagFlavor=plotConfiguration.mistagFlavors_tagC_vs_L,
-                        listTagger=listTagC_vs_L 
+                        listTagger=plotConfiguration.listTagC_vs_L 
                        )
 
 # track infos
