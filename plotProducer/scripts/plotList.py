@@ -77,8 +77,6 @@ jetEta = plotInfo(name="jetEta",
                   Xlabel="#eta", 
                   Ylabel="Arbitrary units",
                   logY=False, grid=False,
-                  binning=[11,90],
-                  Rebin=4, 
                   doNormalization=True,
                   listTagger=["CSVv2"]
                   )
@@ -92,6 +90,26 @@ discr = plotInfo(name="discr",
                  logY=False, grid=False,
                  binning=None, Rebin=None,
                  doNormalization=True
+                 )
+
+eff_vs_eta = plotInfo(name="jetEta_diffEff",
+                 title="Efficiency versus eta for Loose WP",
+                 legend="isVAL KEY-jets", 
+                 legendPosition="top-right",
+                 Xlabel="jet #eta", 
+                 Ylabel="Efficiency",
+                 logY=True, grid=False,
+                 listTagger=["CSVv2", "combMVAv2", "Ctagger_CvsL", "Ctagger_CvsB"]
+                 )
+
+eff_vs_phi = plotInfo(name="jetPhi_diffEff",
+                 title="Efficiency versus phi for Loose WP",
+                 legend="isVAL KEY-jets", 
+                 legendPosition="top-right",
+                 Xlabel="jet #phi", 
+                 Ylabel="Efficiency",
+                 logY=True, grid=False,
+                 listTagger=["CSVv2", "combMVAv2", "Ctagger_CvsL", "Ctagger_CvsB"]
                  )
 
 correlationC = plotInfo(name="pfCombinedCvsBJetTags_vs_pfCombinedCvsLJetTags", 
@@ -694,6 +712,8 @@ listHistos = [
 
     ##### Algorithm performances
     discr,
+    eff_vs_eta,
+    eff_vs_phi,
     effVsDiscrCut_discr,
     FlavEffVsBEff_discr,
     performance,
