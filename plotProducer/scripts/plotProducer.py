@@ -7,17 +7,20 @@
 
 #######
 
+from __future__ import print_function
+from __future__ import division
+
 import os, sys
 
 try:
     import ROOT
 except:
-    print "\nCannot load PYROOT, make sure you have setup ROOT in the path"
-    print "and pyroot library is also defined in the variable PYTHONPATH, try:\n"
+    print("\nCannot load PYROOT, make sure you have setup ROOT in the path")
+    print("and pyroot library is also defined in the variable PYTHONPATH, try:\n")
     if (os.getenv("PYTHONPATH")):
-        print " setenv PYTHONPATH ${PYTHONPATH}:$ROOTSYS/lib\n"
+        print(" setenv PYTHONPATH ${PYTHONPATH}:$ROOTSYS/lib\n")
     else:
-        print " setenv PYTHONPATH $ROOTSYS/lib\n"
+        print(" setenv PYTHONPATH $ROOTSYS/lib\n")
         sys.exit()
 
 from ROOT import TFile
@@ -137,7 +140,7 @@ def performanceGraphProducer(histoCfg, histos, tagFlav="B", mistagFlav=["C", "DU
     g = {}
     g_out = {}
     if tagFlav not in plotConfiguration.listFlavors:
-        print "Error in graphProducer: unknown flavour"
+        print("Error in graphProducer: unknown flavour")
         return
     if histoCfg.tagFlavor and histoCfg.mistagFlavor:
         tagFlav = histoCfg.tagFlavor
@@ -356,7 +359,7 @@ def savePlots(title, saveName, listFormats, histoCfg, histos, keyHisto, listLege
     # Draw banner
     tex = None
     if options.printBanner:
-        print type(options.printBanner)
+        print(type(options.printBanner))
         tex = TLatex(0.55, 0.75, options.Banner)
         tex.SetNDC()
         tex.SetTextSize(0.05)
@@ -366,7 +369,7 @@ def savePlots(title, saveName, listFormats, histoCfg, histos, keyHisto, listLege
    
     if ratiosX:
         pos = 0
-        for flav in sorted(ratiosX.keys()):
+        for flav in sorted(list(ratiosX.keys())):
             if ratiosX[flav] is None: continue
            
             padName = "ratioX_" + flav
@@ -401,7 +404,7 @@ def savePlots(title, saveName, listFormats, histoCfg, histos, keyHisto, listLege
     
     if ratiosY:
         pos = 0
-        for flav in sorted(ratiosY.keys()):
+        for flav in sorted(list(ratiosY.keys())):
             if ratiosY[flav] is None: continue
             
             padName = "ratioY_" + flav

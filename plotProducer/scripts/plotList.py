@@ -20,7 +20,8 @@ class plotInfo :
                   binning=None, Rebin=None,
                   doNormalization=False,
                   listTagger=None, listFlavors=None,
-                  doPerformance=False, tagFlavor="B", mistagFlavor=plotConfiguration.mistagFlavors_tagB):
+                  doPerformance=False, notOnData=False,
+                  tagFlavor="B", mistagFlavor=plotConfiguration.mistagFlavors_tagB):
         self.name = name                        # name of the histos without postfix as PT/ETA bin or flavor
         self.title = title                      # title of the histograms : better if specific for the histogram
         self.legend = legend                    # legend name, if contain 'KEY', it will be replace by the list of keys you provide (as flavor, tagger ...)
@@ -41,6 +42,7 @@ class plotInfo :
             self.legend = legend.replace("TAG", tagFlavor)
             self.tagFlavor = tagFlavor
             self.mistagFlavor = mistagFlavor
+        self.notOnData = notOnData              # when running on data, don't produce the plot if set to True (e.g. performance plots)
         if listTagger is None:
             self.listTagger = plotConfiguration.listTagger # take the list of tagger defined centrally
         else:
@@ -120,7 +122,8 @@ correlationC = plotInfo(name="pfCombinedCvsBJetTags_vs_pfCombinedCvsLJetTags",
                  Ylabel="B mistag",
                  listTagger=["TagCorrelation"],
                  # For c-tagger correlation, "flavor" represents the different c efficiency working points
-                 listFlavors=["500000","400000","300000","200000"]
+                 listFlavors=["500000","400000","300000","200000"],
+                 notOnData=True
                  )
 
 effVsDiscrCut_discr = plotInfo(name="effVsDiscrCut_discr", 
@@ -140,7 +143,8 @@ FlavEffVsBEff_discr = plotInfo(name="FlavEffVsBEff_B_discr",
                                Xlabel="b-tag efficiency", 
                                Ylabel="Non b-tag efficiency",
                                logY=True, grid=True,
-                               listTagger=plotConfiguration.listTagB
+                               listTagger=plotConfiguration.listTagB,
+                               notOnData=True
                                )
 
 # MC only
@@ -154,7 +158,8 @@ performance = plotInfo(name="effVsDiscrCut_discr",
                        doPerformance=True, 
                        tagFlavor="B", 
                        mistagFlavor=plotConfiguration.mistagFlavors_tagB,
-                       listTagger=plotConfiguration.listTagB
+                       listTagger=plotConfiguration.listTagB,
+                       notOnData=True
                        )
 
 # MC only, to do C vs B
@@ -168,7 +173,8 @@ performanceCvsB = plotInfo(name="effVsDiscrCut_discr",
                         doPerformance=True, 
                         tagFlavor="C", 
                         mistagFlavor=plotConfiguration.mistagFlavors_tagC_vs_B,
-                        listTagger=plotConfiguration.listTagC_vs_B
+                        listTagger=plotConfiguration.listTagC_vs_B,
+                        notOnData=True
                        )
 
 # MC only, to do C vs light
@@ -182,7 +188,8 @@ performanceCvsL = plotInfo(name="effVsDiscrCut_discr",
                         doPerformance=True, 
                         tagFlavor="C", 
                         mistagFlavor=plotConfiguration.mistagFlavors_tagC_vs_L,
-                        listTagger=plotConfiguration.listTagC_vs_L 
+                        listTagger=plotConfiguration.listTagC_vs_L,
+                        notOnData=True
                        )
 
 # track infos
