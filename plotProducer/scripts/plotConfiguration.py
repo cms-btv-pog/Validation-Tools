@@ -22,8 +22,8 @@ EtaPtBin =[
 # list of taggers to look at, divided in B- or C-taggers
 # (needed to distinguish performance plots)
 listTagB = [
-	"CSVv2",
-	"combMVAv2",
+    "CSVv2",
+    "combMVAv2",
     "deepCSV_probb",
     "deepCSV_probudsg",
     "deepCSV_probbb",
@@ -58,35 +58,35 @@ listFlavors = [
         #"G",
         #"DUS",
         "DUSG",
-		#"PU",
+        #"PU",
         #"NI",
 ]
 
 # map for marker color for flav-col and tag-col
 mapColor = {
-    "ALL"  : 4 ,
-    "B"    : 633 ,
-    "C"    : 418 ,
-    "G"    : 860 ,
-    "DUS"  : 860 ,
-    "DUSG" : 860 ,
-    #"NI"   : 860 ,
-    "NI"   : 5 ,
-	"PU"   : 6 ,
+    "ALL"  : 4,
+    "B"    : 633,
+    "C"    : 418,
+    "G"    : 860,
+    "DUS"  : 860,
+    "DUSG" : 860,
+    #"NI"   : 860,
+    "NI"   : 5,
+    "PU"   : 6,
     
-	"CSVv2"		: 15 ,
-	"combMVAv2"   : 16 ,
+    "CSVv2"       : 15,
+    "combMVAv2"   : 16,
     "deepCSV_probb" : 2,
     "deepCSV_probc" : 5,
     "deepCSV_probudsg" : 6,
     "deepCSV_probbb" : 7,
-    "JP"        : 3 ,
-    "JBP"       : 9 ,
+    "JP"        : 3,
+    "JBP"       : 9,
     "TCHE"      : 1,
     "SSVHE"     : 4,
     "SISVHE"     : 7,
-    "SMT"       : 8 ,
-    "SET"       : 13 ,
+    "SMT"       : 8,
+    "SET"       : 13,
 
     # c-tagger correlation working points
     "500000"   : 633,

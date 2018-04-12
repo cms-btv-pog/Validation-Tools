@@ -8,6 +8,11 @@
 
 #######
 
+from __future__ import print_function
+from __future__ import division
+
+import os
+
 # parser options
 import argparse
 usage = """%(prog)s [options]"""
@@ -28,7 +33,7 @@ parser.add_argument("-s", "--valSampleName", dest="ValSample", default="ValSampl
                   help="Name to refer to the sample name to validate, ex: TTbar_FullSim, 2012C ...", metavar="VALSAMPLE")
 parser.add_argument("-S", "--refSampleName", dest="RefSample", default="RefSample",
                   help="Name to refer to the reference sample name, ex: TTbar_FullSim, 2012C ...", metavar="REFSAMPLE")
-parser.add_argument("-b", "--batch", dest="batch", default=False,
+parser.add_argument("-b", "--batch", dest="batch", default=True,
                   action="store_true", help="if False, the script will run in batch mode")
 parser.add_argument("-l", "--drawLegend", dest="drawLegend", default=True,
                   action="store_true", help="if True the legend will be drawn on top of the plots")
@@ -38,31 +43,37 @@ parser.add_argument("-B", "--Banner", dest="Banner", default="CMS Preliminary",
                   help="String to write as banner on top of the plots, option -B should be used")
 parser.add_argument("-n", "--noRatio", dest="doRatio", default=True,
                   action="store_false", help="if True, ratios plots will be created")
+parser.add_argument("--runOnData", default=False, action="store_true", help="Run on data (no performance plots; only 'ALL' category). Also activated by the existence of environment variable RUN_ON_DATA.")
 options = parser.parse_args()
 
-print "File for validation :", options.valPath
-print "File for reference  :", options.refPath
-print "Validation release  :", options.ValRel 
-print "Reference release   :", options.RefRel
-print "Validation sample   :", options.ValSample
-print "Reference sample    :", options.RefSample
-print "Batch mode  ?",      options.batch
-print "Draw legend ?",      options.drawLegend
-print "Print banner ?",     options.printBanner
-print "Banner is ",         options.Banner
-print "Make ratio plots ?", options.doRatio
+if os.getenv("RUN_ON_DATA") is not None:
+    options.runOnData = True
+
+print("File for validation :", options.valPath)
+print("File for reference  :", options.refPath)
+print("Validation release  :", options.ValRel)
+print("Reference release   :", options.RefRel)
+print("Validation sample   :", options.ValSample)
+print("Reference sample    :", options.RefSample)
+print("Batch mode  ?",      options.batch)
+print("Draw legend ?",      options.drawLegend)
+print("Print banner ?",     options.printBanner)
+print("Banner is ",         options.Banner)
+print("Make ratio plots ?", options.doRatio)
+print("Run on data ?", options.runOnData)
 
 # import all what is needed
 try:
     import ROOT
 except:
-    print "\nCannot load PYROOT, make sure you have setup ROOT in the path"
-    print "and pyroot library is also defined in the variable PYTHONPATH, try:\n"
+    print("\nCannot load PYROOT, make sure you have setup ROOT in the path")
+    print("and pyroot library is also defined in the variable PYTHONPATH, try:\n")
     if (os.getenv("PYTHONPATH")):
-        print " setenv PYTHONPATH ${PYTHONPATH}:$ROOTSYS/lib\n"
+        print(" setenv PYTHONPATH ${PYTHONPATH}:$ROOTSYS/lib\n")
     else:
-        print " setenv PYTHONPATH $ROOTSYS/lib\n"
+        print(" setenv PYTHONPATH $ROOTSYS/lib\n")
         sys.exit()
+
 import plotProducer
 import plotConfiguration
 import plotList
@@ -93,6 +104,11 @@ for bin in plotConfiguration.EtaPtBin:
     # loop over the histos
     for histo in plotList.listHistos:
 
+        if options.runOnData:
+            histo.listFlavors = ["ALL"]
+            if histo.notOnData:
+                continue
+
         for flav in histo.listFlavors:
             perfAll_Val[flav] = {}
             perfAll_Ref[flav] = {}
@@ -106,7 +122,7 @@ for bin in plotConfiguration.EtaPtBin:
             h_Val = {}
             h_Ref = {}
             passH = False
-            print tagger, "\t\t:: ", histo.title
+            print(tagger, "\t\t:: ", histo.title)
             
             for flav in histo.listFlavors:
                 path = plotConfiguration.pathInFile + tagger + "_" + bin + "/" + histo.name + "_" + tagger + "_" + bin + flav
@@ -127,7 +143,7 @@ for bin in plotConfiguration.EtaPtBin:
                 h_Ref[flav].SetDirectory(0)
                 
                 if not h_Val[flav] :
-                    print "ERROR :", path, "not found in the roofiles, please check the spelling or check if this histogram is present in the rootfile"
+                    print("ERROR :", path, "not found in the roofiles, please check the spelling or check if this histogram is present in the rootfile")
                     passH = True
             
             if passH: continue
@@ -150,7 +166,7 @@ for bin in plotConfiguration.EtaPtBin:
                 refHistos = plotProducer.histoProducer(histoCfg=histo, histos=h_Ref, isVal=False)
             
             if valHistos is None or refHistos is None: continue
-            if len(valHistos) != len(refHistos): print "ERROR"
+            if len(valHistos) != len(refHistos): print("ERROR")
             
             # compute ratios 
             if options.doRatio and "correlation" not in histo.title:
@@ -183,6 +199,7 @@ for bin in plotConfiguration.EtaPtBin:
         
         # for FlavEffVsBEff_B_discr (performance summaries)
         if histo.name == "FlavEffVsBEff_B_discr":
+
             for flav in plotConfiguration.mistagFlavors_tagB:
                 for isVal in [True, False]:
                     # setup the histos
@@ -203,7 +220,7 @@ for bin in plotConfiguration.EtaPtBin:
                             saveName=saveName,
                             listFormats=plotConfiguration.listFormats,
                             histoCfg=histo,
-                            histos=[Histos[t] for t in sorted(Histos.keys())],
+                            histos=[Histos[t] for t in sorted(list(Histos.keys()))],
                             keyHisto=flav+str(isVal),
                             listLegend=histo.listTagger,
                             options=options,
