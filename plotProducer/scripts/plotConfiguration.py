@@ -24,9 +24,7 @@ EtaPtBin =[
 listTagB = [
     "CSVv2",
     "combMVAv2",
-    "deepCSV_probb",
-    "deepCSV_probudsg",
-    "deepCSV_probbb",
+    "deepCSV_BvsAll",
     "JP",
     "JBP",
     "TCHE",
@@ -38,12 +36,13 @@ mistagFlavors_tagB = ["C", "DUSG"]
 #mistagFlavors_tagB = ["C", "NI"]
 
 listTagC_vs_L = [
-    "deepCSV_probc",
+    "deepCSV_CvsL",
     "Ctagger_CvsL"
 ]
 mistagFlavors_tagC_vs_L = ["DUSG"]
 
 listTagC_vs_B = [
+    "deepCSV_CvsB",
     "Ctagger_CvsB",
 ]
 mistagFlavors_tagC_vs_B = ["B"]
@@ -76,10 +75,7 @@ mapColor = {
     
     "CSVv2"       : 15,
     "combMVAv2"   : 16,
-    "deepCSV_probb" : 2,
-    "deepCSV_probc" : 5,
-    "deepCSV_probudsg" : 6,
-    "deepCSV_probbb" : 7,
+    "deepCSV_BvsAll" : 2,
     "JP"        : 3,
     "JBP"       : 9,
     "TCHE"      : 1,
