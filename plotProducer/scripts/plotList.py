@@ -101,7 +101,7 @@ eff_vs_eta = plotInfo(name="jetEta_diffEff",
                  Xlabel="jet #eta", 
                  Ylabel="Efficiency",
                  logY=True, grid=False,
-                 listTagger=["CSVv2", "Ctagger_CvsL", "Ctagger_CvsB"]
+                 listTagger=["CSVv2", "deepCSV_BvsAll", "deepCSV_CvsL", "deepCSV_CvsB", "Ctagger_CvsL", "Ctagger_CvsB"]
                  )
 
 eff_vs_phi = plotInfo(name="jetPhi_diffEff",
@@ -111,7 +111,7 @@ eff_vs_phi = plotInfo(name="jetPhi_diffEff",
                  Xlabel="jet #phi", 
                  Ylabel="Efficiency",
                  logY=True, grid=False,
-                 listTagger=["CSVv2", "Ctagger_CvsL", "Ctagger_CvsB"]
+                 listTagger=["CSVv2", "deepCSV_BvsAll", "deepCSV_CvsL", "deepCSV_CvsB", "Ctagger_CvsL", "Ctagger_CvsB"]
                  )
 
 correlationC = plotInfo(name="pfCombinedCvsBJetTags_vs_pfCombinedCvsLJetTags", 
